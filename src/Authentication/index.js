@@ -439,7 +439,25 @@ export default class App extends React.Component {
                       yet diminishing the pricing of court fees by appeal?
                     </i>
                     {space}Do you want to reverse payable liabilities by a total
-                    to cash liability amortization?
+                    to cash liability amortization?{space}Shouldn't value added
+                    tax be by points of income yet also be payable to sales'
+                    indemnity plaintiff jurisdictions already?{space}
+                    <span style={{ color: "lightgrey" }}>
+                      ​A price discriminating NYU hospital wouldn't happen
+                      without bills unless its otherwise promotionally the same
+                      policy axis as either a monthly bonus or defined benefit,
+                      first.
+                    </span>
+                    {space}
+                    Capital is revenue bearing not personal property ("
+                    <a
+                      style={{ color: "cornflowerblue" }}
+                      href="https://www.youtube.com/watch?v=Sy24UqcCTXE&t=5440"
+                    >
+                      private property is what you use every day
+                    </a>
+                    ") Deflationary benefits of technical instead of just
+                    competitive layoff-deflation.
                   </span>
                   {/* Does the manual payouts api allow Stripe Connect processors to report 
                     unlike sales towards living costs of which are convenient to client and/or 
