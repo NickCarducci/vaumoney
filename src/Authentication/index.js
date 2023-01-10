@@ -379,6 +379,11 @@ export default class App extends React.Component {
                   
                   When aren't government politicians good for making risk-free mistakes?
 
+                  break checks not things; it's a scheduling issue
+
+                  Do you want to reverse payable liabilities by a total to cash liability amortization?
+
+                  
                   */}
                 </span>
               }
@@ -394,18 +399,47 @@ export default class App extends React.Component {
                   <h1 style={{ color: "rgb(230, 230, 170)" }}>vau.money</h1>
                   <h2>tax prep</h2>
                   <h3>Manifest life</h3>
+                  <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
                   <span
                     onMouseEnter={() => hover("teaseDefer", 4500)}
                     onClick={() => {
+                      //"red hankercheif" neck jb faunt "anti-cop [plaintiff indemnity like kind docket tax]"
                       this.setState({ openDefer: !this.state.openDefer });
                     }}
                   >
                     Can escrow be used to defer tax exempt benefits?
                     <br />
-                    How high can contributions to certain tax exempt escrow
-                    accounts for essential institutions and entertainment or
-                    lodging convenient to client be? Can a similar limit be
-                    applied to escrow produced in a customer merchant account?
+                    How high can{space}
+                    <span style={{ color: "plum" }}>
+                      contributions to certain tax exempt{space}
+                      <span style={{ color: "violet" }}>escrow</span>
+                    </span>
+                    {space}
+                    accounts for{space}
+                    <span style={{ color: "darksalmon" }}>
+                      essential institutions and entertainment or lodging
+                    </span>
+                    {space}
+                    <span style={{ color: "lightgreen" }}>
+                      convenient to client
+                    </span>
+                    {space}be?{space}
+                    <i>
+                      Can a similar limit{space}
+                      <b>not</b>
+                      {space}be applied to escrow produced in a customer
+                      merchant account?
+                    </i>
+                    <br />
+                    Does a solvent either person or body ever have a modicum or
+                    even a morsel of debt?{space}
+                    <i style={{ color: "lightgrey" }}>
+                      Has any jurisdiction in the globe implemented a kind
+                      docket with publicized courts? Is any judiciary anywhere
+                      yet diminishing the pricing of court fees by appeal?
+                    </i>
+                    {space}Do you want to reverse payable liabilities by a total
+                    to cash liability amortization?
                   </span>
                   {/* Does the manual payouts api allow Stripe Connect processors to report 
                     unlike sales towards living costs of which are convenient to client and/or 
