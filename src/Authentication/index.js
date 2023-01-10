@@ -407,7 +407,7 @@ export default class App extends React.Component {
                       this.setState({ openDefer: !this.state.openDefer });
                     }}
                   >
-                    Can escrow be used to defer tax exempt benefits?
+                    Can dispositioned escrow be used to defer employee benefits?
                     <br />
                     How high can{space}
                     <span style={{ color: "plum" }}>
