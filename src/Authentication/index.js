@@ -401,6 +401,11 @@ export default class App extends React.Component {
                     }}
                   >
                     Can escrow be used to defer tax exempt benefits?
+                    <br />
+                    How high can contributions to certain tax exempt escrow
+                    accounts for essential institutions and entertainment or
+                    lodging convenient to client be? Can a similar limit be
+                    applied to escrow produced in a customer merchant account?
                   </span>
                   {/* Does the manual payouts api allow Stripe Connect processors to report 
                     unlike sales towards living costs of which are convenient to client and/or 
