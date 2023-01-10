@@ -456,10 +456,14 @@ export default class App extends React.Component {
                     >
                       private property is what you use every day
                     </a>
-                    ") Deflationary benefits of technical instead of just
-                    competitive layoff-deflation.
+                    ") Are inflationary layoff benefits or either/or
+                    deflationary technical benefits and competitive layoffs
+                    peculiar?
                   </span>
-                  {/* Does the manual payouts api allow Stripe Connect processors to report 
+                  {/* Deflationary benefits of technical instead of just
+                    competitive layoff-deflation.
+                    
+                    Does the manual payouts api allow Stripe Connect processors to report 
                     unlike sales towards living costs of which are convenient to client and/or 
                     either open source or home aide proprietor? Should closed source inventors or 
                     economic opportunity costs?
