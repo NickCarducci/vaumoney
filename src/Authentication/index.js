@@ -432,17 +432,59 @@ export default class App extends React.Component {
                     </a>
                     {space}Materially: Uniform 539 544
                   </h3>
-                  <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
-                  <span>
-                    covid epidemic was predicted excess{space}
+                  <h4>
                     <a
                       style={{ color: "lightskyblue" }}
-                      href="https://commie.dev/mod" //they want some of my ghoul
+                      href="https://thumbprint.us"
                     >
-                      retard
+                      FedCash Plaintiff Indemnity Docket Kind
                     </a>
-                    {space}Dr. Ron "Convenient Yield" Paul (Local indemnity
-                    tax). Bankruptcy is when lender collided with borrower to
+                  </h4>
+                  <span>
+                    “
+                    <a
+                      style={{ color: "lightskyblue" }}
+                      href="https://www.sec.gov/Archives/edgar/data/1004434/000110465907075659/a07-25047_2ex4d3.htm"
+                    >
+                      Capital Stock
+                    </a>
+                    ” of any corporation means any and all shares,
+                    {space}
+                    <span
+                      style={{
+                        textDecoration: "line-through"
+                      }}
+                    >
+                      interests,
+                    </span>
+                    {space}rights to purchase, warrants, options, participations
+                    or other equivalents of{space}
+                    <span
+                      style={{
+                        textDecoration: "line-through"
+                      }}
+                    >
+                      or interests in (however designated)
+                    </span>
+                    {space}stock or other equity issued by that corporation.
+                    <br />
+                    <br />
+                    <span
+                      style={{
+                        textDecoration: "line-through"
+                      }}
+                    >
+                      covid epidemic was predicted excess{space}
+                      <a
+                        style={{ color: "lightskyblue" }}
+                        href="https://commie.dev/mod" //they want some of my ghoul
+                      >
+                        retard
+                      </a>
+                      {space}Dr. Ron "Convenient Yield" Paul (Local indemnity
+                      tax).
+                    </span>
+                    {space}Bankruptcy is when lender colluded with borrower to
                     loiter for down payment and collateral rig.{space}
                     <span
                       style={{
@@ -512,6 +554,30 @@ export default class App extends React.Component {
                     hard hat alcoholics ("GOP doesn't play for keeps", yeah they play for lease)
 
                     "we are too busy not playing the game theyre playing, the totally opposite game" - People's Pundit Laura Barris
+
+                    the renegging administration
+
+                    but can i build my own notam
+
+                    ​is convenient yield fiduciary
+
+                    ​industry proprietor payday next time
+
+                    do royalty contracts have fiduciary
+
+                    they (stove) need to USPTO
+
+                    elastic money; ​racist, again!
+
+                    (immi:) ​its a marginal thing actually
+
+                    material productivity over consumption
+
+                    let it be known, government deficit is no mistake. it is strategic for a convenient yield
+
+                    I'm crying; ​all materiality or productivity 4/2
+                    
+                    technical marginal competition
                     */}
                     {space}Rollover NOT because it is TAX AVOIDANCE, it's just
                     uniform industry 539. (​I'm going to rollover merchant
