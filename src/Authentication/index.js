@@ -388,6 +388,19 @@ export default class App extends React.Component {
 
                   Do you want to reverse payable liabilities by a total to cash liability amortization?
 
+                  Can a corporation go public partially or through a subsidiary in order for its original shareholders to own more than 20% of the entire shebang?
+
+                  ban it if I cannot build it
+
+                  Isn't ​recession by either unemployment or materiality marginal but for inflation anyway?
+
+                  he made it (measure fake cute association - bad advice indemnity tax
+                    
+                    authorized contributed advice ftc)
+
+                    we need to be able to save for medical entertainment and encampments like college
+
+                    Should Johns Hopkins University economics be teaching shrinkflation or materiality?
                   
                   */}
                 </span>
@@ -405,6 +418,20 @@ export default class App extends React.Component {
                   <h2>tax prep</h2>
                   <h3>Manifest life</h3>
                   <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
+                  <span>
+                    covid epidemic was predicted excess{space}
+                    <a href="https://commie.dev/mod">retard</a>
+                    {space}Dr. Ron "Convenient Yield" Paul (Local indemnity
+                    tax). Bankruptcy is when lender collided with borrower to
+                    loiter for down payment and collateral rig.  Fiat money is
+                    forced investment please sponsor me Nick@vaults.biz 12.1.5 I
+                    just said ban it if I can't build it? General services
+                    administration loves sex bots and child human trafficking.
+                    Radio jammng by gov hello. An anonymous identity provider
+                    for brokers and money service processors. Uniform ways of
+                    liberty says no.
+                  </span>
+                  <br />
                   <span
                     onMouseEnter={() => hover("teaseDefer", 4500)}
                     onClick={() => {
@@ -1181,7 +1208,10 @@ export default class App extends React.Component {
                       )
                     }
                   />
-                )
+                ) //manifest my life escrow
+                //licensed estimates and escrow
+                //binary tract bonuses; rollove
+                //discovery checkr
               }
             />
           ) : (
