@@ -412,8 +412,16 @@ export default class App extends React.Component {
                       this.setState({ openDefer: !this.state.openDefer });
                     }}
                   >
-                    Can dispositioned escrow be used to defer employee benefits?
-                    <br />
+                    <span style={{ color: "lightgrey" }}>
+                      Can dispositioned escrow be used to defer employee
+                      benefits?
+                      {space}
+                      <i>
+                        How can merchant customers contribute to dispositioned
+                        escrow to defer tax exempt consumption?
+                      </i>
+                    </span>
+                    {space}
                     How high can{space}
                     <span style={{ color: "plum" }}>
                       contributions to certain tax exempt{space}
@@ -435,7 +443,7 @@ export default class App extends React.Component {
                       {space}be applied to escrow produced in a customer
                       merchant account?
                     </i>
-                    <br />
+                    {space}
                     Does a solvent either person or body ever have a modicum or
                     even a morsel of debt?{space}
                     <i style={{ color: "lightgrey" }}>
