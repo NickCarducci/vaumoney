@@ -469,6 +469,10 @@ export default class App extends React.Component {
                     {/*I do not like enuncinations that sing instructors teach; make a pitch app. */}
                   </span>
                   <h2>Implausible use property</h2>
+                  <h3>
+                    Materiality to shrinkflation is the outcome of resources
+                    including labor.
+                  </h3>
                   <span
                     onMouseEnter={() => hover("teaseDefer", 4500)}
                     onClick={() => {
