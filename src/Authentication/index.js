@@ -415,7 +415,13 @@ export default class App extends React.Component {
                   }}
                 >
                   <h1 style={{ color: "rgb(230, 230, 170)" }}>vau.money</h1>
-                  <h2>tax prep</h2>
+                  <h2>
+                    <span style={{ textDecoration: "line-through" }}>
+                      tax prep
+                    </span>
+                    {space}
+                    <span>displacement producer</span>
+                  </h2>
                   <h3>
                     Manifest{space}
                     <a
@@ -473,6 +479,7 @@ export default class App extends React.Component {
                     Materiality to shrinkflation is the outcome of resources
                     including labor.
                   </h3>
+                  {/**"right [invokes, induce] greater duty" invoke vs induce */}
                   <span
                     onMouseEnter={() => hover("teaseDefer", 4500)}
                     onClick={() => {
