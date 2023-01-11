@@ -411,7 +411,7 @@ export default class App extends React.Component {
                     color: "white",
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center"
+                    alignItems: "center" //weasel steps
                   }}
                 >
                   <h1 style={{ color: "rgb(230, 230, 170)" }}>vau.money</h1>
@@ -430,41 +430,50 @@ export default class App extends React.Component {
                     >
                       life
                     </a>
-                    {space}Materially
+                    {space}Materially: Uniform 539 544
                   </h3>
                   <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
                   <span>
                     covid epidemic was predicted excess{space}
                     <a
                       style={{ color: "lightskyblue" }}
-                      href="https://commie.dev/mod"
+                      href="https://commie.dev/mod" //they want some of my ghoul
                     >
                       retard
                     </a>
                     {space}Dr. Ron "Convenient Yield" Paul (Local indemnity
                     tax). Bankruptcy is when lender collided with borrower to
-                    loiter for down payment and collateral rig.  Fiat money is
-                    forced investment please sponsor me Nick@vaults.biz 12.1.5 I
-                    just said ban it if I can't build it? General services
-                    administration loves sex bots and child human trafficking.
-                    Radio jammng by gov hello. An anonymous identity provider
-                    for brokers and money service processors. Uniform ways of
-                    liberty says no. Convenient yield is the unintended
-                    consequence of libertarianism. Human action is detracted by
-                    contract. Private property is used daily. When peace becomes
-                    terror. Net exports are a wash materially not action. Ban
-                    contracts is communism frugal anarchist commercial
-                    legislation. Does "capping spend" include insurance
-                    premiums? Is a negotiation ever settled as outstanding?
-                    Maybe it's a powerful position for you. It's probably a
-                    cariologist's tort. Tort reform no jury duty is my case
-                    proof. Medic security. Desist upon industry variable
-                    consensus. Payday as proprietor inclusionary-imbued.
-                    Autonomously Knight foundation die die die (issue committee
-                    coefficiencies, no affinity, most importantly "deductions in
-                    advance") Do you work from home? Are you eating lunch right
-                    now while telecommunicating? Group accounts in chat?
-                    Associate Moving to Work Exemptions in advance,{space}
+                    loiter for down payment and collateral rig.{space}
+                    <span
+                      style={{
+                        color: "linen"
+                      }}
+                    >
+                      Fiat money is forced investment please sponsor me
+                      Nick@vaults.biz 12.1.5 I just said ban it if I can't build
+                      it? General services administration loves sex bots and
+                      child human trafficking. Radio jammng by gov hello. An
+                      anonymous identity provider for brokers and money service
+                      processors. Uniform ways of liberty says no. Convenient
+                      yield is the unintended consequence of libertarianism.
+                      Human action is detracted by contract. Private property is
+                      used daily. When peace becomes terror. Net exports are a
+                      wash materially not action. Ban contracts is communism
+                      frugal anarchist commercial legislation. Does "capping
+                      spend" include insurance premiums? Is a negotiation ever
+                      settled as outstanding? Maybe it's a powerful position for
+                      you. It's probably a cariologist's tort. Tort reform no
+                      jury duty is my case proof. Medic security (low rates high
+                      velocity; "I knew the customer."). Desist upon industry
+                      variable consensus. Payday as proprietor
+                      inclusionary-imbued. Autonomously Knight foundation die
+                      die die
+                    </span>
+                    {space}(issue committee coefficiencies, no affinity, most
+                    importantly "deductions in advance") Do you work from home?
+                    Are you eating lunch right now while telecommunicating?
+                    Group accounts in chat? Associate Moving to Work Exemptions
+                    in advance,{space}
                     <a
                       style={{ color: "lightskyblue" }}
                       href="https://stripe.com/docs/connect/manual-payouts"
@@ -472,7 +481,34 @@ export default class App extends React.Component {
                       how much
                     </a>
                     ?{/* 7=Itemize your contracts; be evil incisively */}
-                    {/*I do not like enuncinations that sing instructors teach; make a pitch app. */}
+                    {/*I do not like enuncinations that sing instructors teach; make a pitch app.
+                    
+                    You're bluffing!
+
+                    All or nothing
+
+                    default reconciliation voting
+
+                    That's what G-d would have wanted if He tried. 1913-33 Prohibition or hard hats?
+
+                    lead with pain
+
+                    1968 latches (thanks barnes)
+
+                    (or) w weasel steps ("I will make your dollar return the 3% to your account re")
+
+                    can't take money on that pacs aren't affiliated with a puddy not diplaced agent if you will.
+
+                    third party donee beneficiary
+
+                    what if we fail? I need a pac buddy stat
+
+                    Lease no land nor labor. ban it if I can't build it
+
+                    tax the rich by forcing liquidity as plausible use.. if at all
+
+                    we need uniform 539 by industry
+                    */}
                   </span>
                   <h2>Implausible use property</h2>
                   <h3>
