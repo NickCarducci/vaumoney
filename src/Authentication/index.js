@@ -444,9 +444,10 @@ export default class App extends React.Component {
                     indemnity plaintiff jurisdictions already?{space}
                     <span style={{ color: "lightgrey" }}>
                       ​A price discriminating NYU hospital wouldn't happen
-                      without bills unless its otherwise promotionally the same
-                      policy axis as either a monthly bonus or defined benefit,
-                      first.
+                      without bills unless its otherwise binarily the
+                      {/*promotionally*/} same policy axis tracts
+                      {/**stokes/detracts */} either a monthly bonus or defined
+                      benefit, first.
                     </span>
                     {space}
                     Capital is revenue bearing not personal property ("
