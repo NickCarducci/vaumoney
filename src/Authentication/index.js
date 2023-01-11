@@ -420,7 +420,12 @@ export default class App extends React.Component {
                   <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
                   <span>
                     covid epidemic was predicted excess{space}
-                    <a href="https://commie.dev/mod">retard</a>
+                    <a
+                      style={{ color: "lightskyblue" }}
+                      href="https://commie.dev/mod"
+                    >
+                      retard
+                    </a>
                     {space}Dr. Ron "Convenient Yield" Paul (Local indemnity
                     tax). Bankruptcy is when lender collided with borrower to
                     loiter for down payment and collateral rig.  Fiat money is
@@ -429,7 +434,12 @@ export default class App extends React.Component {
                     administration loves sex bots and child human trafficking.
                     Radio jammng by gov hello. An anonymous identity provider
                     for brokers and money service processors. Uniform ways of
-                    liberty says no.
+                    liberty says no. Convenient yield is the unintended
+                    consequence of libertarianism. Human action is detracted by
+                    contract. Private property is used daily. When peace becomes
+                    terror. Net exports are a wash materially not action. Ban
+                    contracts is communism frugal anarchist commercial
+                    legislation.
                   </span>
                   <br />
                   <span
