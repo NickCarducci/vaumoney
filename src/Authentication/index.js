@@ -87,17 +87,22 @@ export default class App extends React.Component {
     }; //linear-gradient(to right, #fb8b1e, #2b00f7)
     //console.log(window.meAuth);
     const hover = (name, timeout) => {
+      var copy = { ...this.state.hovers };
       this.setState({
-        hovers: {
-          [name]: true
-        }
+        hovers: { ...copy, [name]: true } //[...this.state.hovers, name] //{ [name]: true}
       });
       clearTimeout(this[name]);
-      this[name] =
-        timeout &&
-        setTimeout(() => {
-          this.setState({ hovers: { [name]: false } });
-        }, timeout);
+      if (timeout) {
+        delete copy[name];
+        this[name] =
+          timeout &&
+          setTimeout(() => {
+            this.setState({
+              //[...
+              hovers: { ...copy } //this.state.hovers.filter((x) => x !== name) //, name] //{ [name]: false }
+            });
+          }, timeout);
+      }
     };
     return (
       <div
@@ -471,6 +476,7 @@ export default class App extends React.Component {
                      */}
                   <h3
                     style={{
+                      margin: "0px",
                       fontSize: this.state.hovers.teaseDefer ? "" : "0px"
                     }}
                   >
@@ -492,170 +498,177 @@ export default class App extends React.Component {
                     >
                       CAPITAl
                     </a>
-                    .
-                  </h3>
-                  <h3
-                    style={{
-                      textDecoration: "line-through",
-                      fontSize: this.state.openDefer ? "" : "0px"
-                    }}
-                  >
-                    <br />
-                    {" " /**​cardinal order is chaos */}
-                    {/*anarchy of production
+                    .<br />
+                    <span
+                      style={{
+                        margin: "0px",
+                        textDecoration: "line-through",
+                        fontSize: this.state.openDefer ? "" : "0px"
+                      }}
+                    >
+                      <br />
+                      {" " /**​cardinal order is chaos */}
+                      {/*anarchy of production
                       depraved allow Allah, would have
                       ...and?? why correlation less homicides everyone smoke weed & car DUI
                       
                       don't degrade yourself man
                       
                       */}
-                    <span
-                      onMouseEnter={() => hover("openTitle", 4500)}
-                      onClick={() => {
-                        !this.state.openTotal &&
-                          window.alert(
-                            "I believe if you open source your work you 501c3; or use FedCash, anything [better]"
-                          );
-                        this.setState({ openTotal: !this.state.openTotal });
-                      }}
-                    >
-                      $300 non-profit application
-                    </span>
-                    ,{space}
-                    <span style={{ textDecoration: "line-through" }}>
-                      $15/mo insurance (with fax)
-                    </span>
-                    , encampment to client.
-                    {space}
-                    {"<"}YOUR_NAME_HERE{">"}
-                    <br />
-                    <span
-                      style={{
-                        fontSize:
-                          this.state.hovers.openTitle && !this.state.openTotal
-                            ? ""
-                            : "0px"
-                      }}
-                    >
-                      tax defered wills with maybe a tax free open source
-                      business{space}
-                      <i>(why are will accounts tax deferred globally?)</i>
-                    </span>
-                    {
-                      this.state.hovers.openTitle && <br />
-                      /**
-                       * horny dudes (marginalism.uk deprived hijabs); ​cover up babe
-                       * no shame in the garden tho
-                       * alternatives are always covalently endogenous by happenstance
-                       * artifactually, not necessarily cause and maybe just mere general prevalence
-                       * regcops.quora.com (all cops are literally bastards of the state government kerfuffle)
-                       * all cops are literally bastards of the state government kerfuffle
-                       * invest in yourself vau.money
-                       * humility is narcisicm. nietzche marxism
-                       * Is a life insurance account much different than an escrow merchant account but for licensure exclusion and tax privileges?
-                       * r/ comptroll (Relinquish your morals for your art in ordinary carnations: (1) humility is narcissism, and (2) value comes from the stomachs. A natural monopoly is a network, alone.)
-                       * Can life-only insurance producer agent tax exempt either inventories, escrow, or fiduciary will Stripe Connect merchant processor money services be nearly as risk-loving as are the FACHA banks with bank identification numbers for MasterCard issuance?
-                       * keep the hereditary caste going with tax exempt life only broke peeps
-                       * ​deferred until open source i mean
-                       * ​popcorn can overfloweth (non-perisable
-                       * self sustaining water filtration)
-                       * make an alternative government
-                       * ​I'll do your taxes I just need a fucking fax, "[yes, I'll take a latte.] I’m here for fundamental change. Latte?"
-                       * the tax party choose another binary edge
-                       * might not be white but pink
-                       * Warranty project agent merchant (fraud indemnity open source and home aid)
-                       * Taxes for closed source and travelers (home aide/ convenient)
-                       * cardinal benefits overhead
-                       */
-                    }
-                    <div
-                      style={{
-                        //out of scope, abundance cups of popcorn depos
-                        fontSize: !this.state.openTotal ? "" : "0px"
-                      }}
-                    >
-                      Can an insurance producer open an escrow account with any
-                      bank for and toward their clients' long term living costs?
-                      {/**Russell brand invented settling  out of course? 
+                      <span
+                        onMouseEnter={() => hover("openTitle", 4500)}
+                        onClick={() => {
+                          !this.state.openTotal &&
+                            window.alert(
+                              "I believe if you open source your work you 501c3; or use FedCash, anything [better]"
+                            );
+                          this.setState({ openTotal: !this.state.openTotal });
+                        }}
+                      >
+                        $300 non-profit application
+                      </span>
+                      ,{space}
+                      <span style={{ textDecoration: "line-through" }}>
+                        $15/mo insurance (with fax)
+                      </span>
+                      , encampment to client.
+                      {space}
+                      {"<"}YOUR_NAME_HERE{">"}
+                      <br />
+                      <span
+                        style={{
+                          fontSize:
+                            this.state.hovers.openTitle && !this.state.openTotal
+                              ? ""
+                              : "0px"
+                        }}
+                      >
+                        tax defered wills with maybe a tax free open source
+                        business{space}
+                        <i>(why are will accounts tax deferred globally?)</i>
+                      </span>
+                      {
+                        this.state.hovers.openTitle && <br />
+                        /**
+                         * horny dudes (marginalism.uk deprived hijabs); ​cover up babe
+                         * no shame in the garden tho
+                         * alternatives are always covalently endogenous by happenstance
+                         * artifactually, not necessarily cause and maybe just mere general prevalence
+                         * regcops.quora.com (all cops are literally bastards of the state government kerfuffle)
+                         * all cops are literally bastards of the state government kerfuffle
+                         * invest in yourself vau.money
+                         * humility is narcisicm. nietzche marxism
+                         * Is a life insurance account much different than an escrow merchant account but for licensure exclusion and tax privileges?
+                         * r/ comptroll (Relinquish your morals for your art in ordinary carnations: (1) humility is narcissism, and (2) value comes from the stomachs. A natural monopoly is a network, alone.)
+                         * Can life-only insurance producer agent tax exempt either inventories, escrow, or fiduciary will Stripe Connect merchant processor money services be nearly as risk-loving as are the FACHA banks with bank identification numbers for MasterCard issuance?
+                         * keep the hereditary caste going with tax exempt life only broke peeps
+                         * ​deferred until open source i mean
+                         * ​popcorn can overfloweth (non-perisable
+                         * self sustaining water filtration)
+                         * make an alternative government
+                         * ​I'll do your taxes I just need a fucking fax, "[yes, I'll take a latte.] I’m here for fundamental change. Latte?"
+                         * the tax party choose another binary edge
+                         * might not be white but pink
+                         * Warranty project agent merchant (fraud indemnity open source and home aid)
+                         * Taxes for closed source and travelers (home aide/ convenient)
+                         * cardinal benefits overhead
+                         */
+                      }
+                      <div
+                        onMouseEnter={() => {
+                          hover("teaseDefer", null);
+                          hover("openTitle", null);
+                        }}
+                        style={{
+                          //out of scope, abundance cups of popcorn depos
+                          fontSize: !this.state.openTotal ? "" : "0px"
+                        }}
+                      >
+                        Can an insurance producer open an escrow account with
+                        any bank for and toward their clients' long term living
+                        costs?
+                        {/**Russell brand invented settling  out of course? 
                         
                         */}
-                      {space}[
-                      <span style={{ color: "pink" }}>
-                        Can real estate agent collateral include a scope of
-                        requirement project proposal accepted request in escrow?
-                      </span>
-                      ,{space}
-                      <i>
-                        If you settle out of court can an insurance agent
-                        produce an escrow account (Publication 544)?
-                      </i>
-                      ,{space}
-                      <i style={{ color: "cornflowerblue" }}>
-                        Doesn't the government banking system tax higher
-                        brackets in order to force us into mortgages to sustain
-                        cardinal financial industry value benefits?
-                      </i>
-                      ,{space}
-                      <span style={{ color: "indianred" }}>
-                        Don't non-qualified either insurance or real estate
-                        agent escrow providers qualify living costs as tax
-                        exempt like IRS agents delegate to non-profit board
-                        members for living costs of open source or home aid
-                        business income work generally?
-                      </span>
-                      ,{space}
-                      <span style={{ color: "gold" }}>
-                        Can Stripe Connect rollover manual payouts to multiple
-                        customer account links to avoid taxes?
-                      </span>
-                      ,{space}
-                      <span>
-                        Is there an Internal Revenue Service (IRS) publication
-                        for each and every Internal Revenue Code (IRC) section?
-                      </span>
-                      ,{space /**blueviolet, darkviolet, darkorchid */}
-                      <span style={{ color: "orchid" }}>
-                        Can an agent producer establish and maintain a certain
-                        group-life insurance policy cash value through an
-                        employee tax withholding yet as a merchant’s manual
-                        payment? Does Stripe Connect issue 1099-k for merchant
-                        sole proprietors that employ people?
-                      </span>
-                      ,{space}
-                      <span style={{ color: "plum" }}>
-                        Can Stripe Connect rollover manual payouts to multiple
-                        customer account links to avoid taxes?
-                      </span>
-                      ]{space}
-                      <span style={{ opacity: 0.8 }}>
-                        <span style={{ color: "linen" }}>
-                          How can an IRC section 79 tax exempt life insurance
-                          and 457(b) tax deferred compensation account
-                          withdrawal early without borrowing the liability
-                          assumed purchases?{space}
-                          <span
-                            style={{
-                              textDecoration: "underline",
-                              opacity: 0.8
-                            }}
-                          >
-                            <b>Competition and hours are deflationary</b>
-                            {space}in void of accelerating inflation happenings
-                            over marginalism.uk; resource productivity over
-                            consumption is retardation
+                        {space}[
+                        <span style={{ color: "pink" }}>
+                          Can real estate agent collateral include a scope of
+                          requirement project proposal accepted request in
+                          escrow?
+                        </span>
+                        ,{space}
+                        <i>
+                          If you settle out of court can an insurance agent
+                          produce an escrow account (Publication 544)?
+                        </i>
+                        ,{space}
+                        <i style={{ color: "cornflowerblue" }}>
+                          Doesn't the government banking system tax higher
+                          brackets in order to force us into mortgages to
+                          sustain cardinal financial industry value benefits?
+                        </i>
+                        ,{space}
+                        <span style={{ color: "indianred" }}>
+                          Don't non-qualified either insurance or real estate
+                          agent escrow providers qualify living costs as tax
+                          exempt like IRS agents delegate to non-profit board
+                          members for living costs of open source or home aid
+                          business income work generally?
+                        </span>
+                        ,{space}
+                        <span style={{ color: "gold" }}>
+                          Can Stripe Connect rollover manual payouts to multiple
+                          customer account links to avoid taxes?
+                        </span>
+                        ,{space}
+                        <span>
+                          Is there an Internal Revenue Service (IRS) publication
+                          for each and every Internal Revenue Code (IRC)
+                          section?
+                        </span>
+                        ,{space /**blueviolet, darkviolet, darkorchid */}
+                        <span style={{ color: "orchid" }}>
+                          Can an agent producer establish and maintain a certain
+                          group-life insurance policy cash value through an
+                          employee tax withholding yet as a merchant’s manual
+                          payment? Does Stripe Connect issue 1099-k for merchant
+                          sole proprietors that employ people?
+                        </span>
+                        ,{space}
+                        <span style={{ color: "plum" }}>
+                          Can Stripe Connect rollover manual payouts to multiple
+                          customer account links to avoid taxes?
+                        </span>
+                        ]{space}
+                        <span style={{ opacity: 0.8 }}>
+                          <span style={{ color: "linen" }}>
+                            How can an IRC section 79 tax exempt life insurance
+                            and 457(b) tax deferred compensation account
+                            withdrawal early without borrowing the liability
+                            assumed purchases?{space}
+                            <span
+                              style={{
+                                textDecoration: "underline",
+                                opacity: 0.8
+                              }}
+                            >
+                              <b>Competition and hours are deflationary</b>
+                              {space}in void of accelerating inflation
+                              happenings over marginalism.uk; resource
+                              productivity over consumption is retardation
+                            </span>
+                            .
                           </span>
-                          .
+                          {space}
+                          <span style={{ color: "lightskyblue" }}>
+                            Doesn't a life insurance policy work as a living
+                            will? Does it need to expire with non fiduciary
+                            depository inventory nor warranty indemnity consumer
+                            fraud or can the certificate issuer also be an
+                            outright either depositary or merchant processor?
+                          </span>
                         </span>
-                        {space}
-                        <span style={{ color: "lightskyblue" }}>
-                          Doesn't a life insurance policy work as a living will?
-                          Does it need to expire with non fiduciary depository
-                          inventory nor warranty indemnity consumer fraud or can
-                          the certificate issuer also be an outright either
-                          depositary or merchant processor?
-                        </span>
-                      </span>
-                      {/*
+                        {/*
                         warranty schedule fraud EULA
 
                         If you settle out of court can an insurance agent produce an escrow account?
@@ -674,7 +687,8 @@ export default class App extends React.Component {
 
                         change the nonpartisan question
                          */}
-                    </div>
+                      </div>
+                    </span>
                   </h3>
                   <div
                     style={{
