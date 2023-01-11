@@ -416,7 +416,16 @@ export default class App extends React.Component {
                 >
                   <h1 style={{ color: "rgb(230, 230, 170)" }}>vau.money</h1>
                   <h2>tax prep</h2>
-                  <h3>Manifest life</h3>
+                  <h3>
+                    Manifest{space}
+                    <a
+                      style={{ color: "lightskyblue" }}
+                      href="https://livetaxfree.quora.com"
+                    >
+                      life
+                    </a>
+                    {space}Materially
+                  </h3>
                   <h4>FedCash Plaintiff Indemnity Docket Kind</h4>
                   <span>
                     covid epidemic was predicted excess{space}
@@ -578,6 +587,7 @@ export default class App extends React.Component {
                       
                       */}
                       <span
+                        style={{ textDecoration: "underline" }}
                         onMouseEnter={() => hover("openTitle", 4500)}
                         onClick={() => {
                           !this.state.openTotal &&
