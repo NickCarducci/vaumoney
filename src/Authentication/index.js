@@ -508,7 +508,14 @@ export default class App extends React.Component {
                     tax the rich by forcing liquidity as plausible use.. if at all
 
                     we need uniform 539 by industry
+
+                    hard hat alcoholics ("GOP doesn't play for keeps", yeah they play for lease)
+
+                    "we are too busy not playing the game theyre playing, the totally opposite game" - People's Pundit Laura Barris
                     */}
+                    {space}Rollover NOT because it is TAX AVOIDANCE, it's just
+                    uniform industry 539. (​I'm going to rollover merchant
+                    links.)
                   </span>
                   <h2>Implausible use property</h2>
                   <h3>
