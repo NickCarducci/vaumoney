@@ -752,10 +752,10 @@ class FIREBASE_APP extends React.Component {
               us_bank_account: {
                 //country: user.address.country,
                 //currency: "USD",
-                account_holder_type: this.state.account_holder_type,
-                account_number: this.state.account_number,
+                company: this.state.account_holder_type,
+                account: this.state.account_number,
                 //account_type: this.state.account_type,
-                routing_number: this.state.routing_number
+                routing: this.state.routing_number
               },
               billing_details: {
                 address,
@@ -839,7 +839,7 @@ class FIREBASE_APP extends React.Component {
                 this.state.amount +
                 "?"
             );
-            paynow();
+            answer && paynow();
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -1050,12 +1050,21 @@ class FIREBASE_APP extends React.Component {
                                   submitBankCard("bank");
                                 }}*/
             >
-              <input
+              {/*<input
                 required={true}
                 placeholder="company"
                 value={this.state.account_holder_type}
                 onChange={(e) => textu(e, "account_holder_type")}
-              />
+              />*/}
+              <select
+                onChange={(e) =>
+                  this.setState({ account_holder_type: e.target.value })
+                }
+              >
+                {["company", "individual"].map((x) => {
+                  return <option>{x}</option>;
+                })}
+              </select>
               <input
                 required={true}
                 placeholder="account"
