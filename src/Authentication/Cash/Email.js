@@ -191,6 +191,14 @@ class Email extends React.Component {
       borderRadius: "0px",
       width: "100%"
     };
+    const codify = (e, entry) => {
+      const output = (e.target.id === "country" ? countries : states).find(
+        (x) => x.name.toUpperCase() === entry.toUpperCase()
+      );
+      return output
+        ? output[e.target.id === "country" ? "alpha_2" : "abbreviation"]
+        : entry;
+    };
     const changePayoutInput = (e) => {
       const entry = e.target.value;
       this.setState({
