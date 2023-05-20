@@ -737,35 +737,30 @@ class FIREBASE_APP extends React.Component {
       const bankcard =
         this.state.payoutType !== "bank"
           ? {
-              card: {
-                primary: this.state.number,
-                exp_month: expiry[0],
-                exp_year: expiry[1],
-                cvc: this.state.cvc
-              }, //cardElement
-              billing_details: {
-                address,
-                phone: this.props.auth.phoneNumber,
-                name: this.state.first + this.state.middle + this.state.last,
-                email: this.props.auth.email
-              }
+              primary: this.state.number,
+              exp_month: expiry[0],
+              exp_year: expiry[1],
+              cvc: this.state.cvc,
+              //cardElement
+
+              address,
+              phone: this.props.auth.phoneNumber,
+              name: this.state.first + this.state.middle + this.state.last,
+              email: this.props.auth.email
             }
           : {
-              us_bank_account: {
-                //country: user.address.country,
-                //currency: "USD",
-                company: this.state.account_holder_type,
-                account: this.state.account_number,
-                //account_type: this.state.account_type,
-                routing: this.state.routing_number,
-                savings: this.state.savings
-              },
-              billing_details: {
-                address,
-                phone: this.props.auth.phoneNumber,
-                name: this.state.first + this.state.middle + this.state.last,
-                email: this.props.auth.email
-              }
+              //country: user.address.country,
+              //currency: "USD",
+              company: this.state.account_holder_type,
+              account: this.state.account_number,
+              //account_type: this.state.account_type,
+              routing: this.state.routing_number,
+              savings: this.state.savings,
+
+              address,
+              phone: this.props.auth.phoneNumber,
+              name: this.state.first + this.state.middle + this.state.last,
+              email: this.props.auth.email
             };
 
       await fetch("https://vault-co.in/paynow", {
