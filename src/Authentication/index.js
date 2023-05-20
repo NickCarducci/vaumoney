@@ -1064,7 +1064,7 @@ class FIREBASE_APP extends React.Component {
                   this.setState({ account_holder_type: e.target.value })
                 }
               >
-                {["company", "individual"].map((x) => {
+                {["individual", "company"].map((x) => {
                   return <option>{x}</option>;
                 })}
               </select>
