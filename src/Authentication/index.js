@@ -813,9 +813,20 @@ class FIREBASE_APP extends React.Component {
       <div>
         {JSON.stringify(this.state.viewUser)}
         <br />
-        7011 Home: real property development management operations, 8099
-        Patient: out-of-pocket health care providers, 8299 Student: school
-        tuition, 8398 Charity: foundation
+        <select
+          onChange={(e) => {
+            this.setState({ selectThisOne: e.target.id });
+          }}
+        >
+          {[
+            "7011 Home: real property development management operations",
+            "8099 Patient: out-of-pocket health care providers",
+            "8299 Student: school tuition",
+            "8398 Charity: foundation"
+          ].map((x) => (
+            <option id={x.substring(0, 4)}>{x.split(": ")[1]}</option>
+          ))}
+        </select>
         <br />
         <br />
         <form
