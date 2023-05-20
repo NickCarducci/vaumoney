@@ -480,6 +480,8 @@ class FIREBASE_APP extends React.Component {
     };
     this.state = {
       ...init,
+      account_holder_type: "individual",
+      savings: "checking",
       transactions: [],
       businesses: [],
       defaultSendingFund: [],
@@ -755,7 +757,8 @@ class FIREBASE_APP extends React.Component {
                 company: this.state.account_holder_type,
                 account: this.state.account_number,
                 //account_type: this.state.account_type,
-                routing: this.state.routing_number
+                routing: this.state.routing_number,
+                savings: this.state.savings
               },
               billing_details: {
                 address,
@@ -1071,6 +1074,13 @@ class FIREBASE_APP extends React.Component {
                 value={this.state.account_number}
                 onChange={(e) => textu(e, "account_number")}
               />
+              <select
+                onChange={(e) => this.setState({ savings: e.target.value })}
+              >
+                {["checking", "savings"].map((x) => {
+                  return <option>{x}</option>;
+                })}
+              </select>
               {/*<input
                                   required={true}
                                   placeholder="checking"
