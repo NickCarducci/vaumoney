@@ -810,8 +810,8 @@ class FIREBASE_APP extends React.Component {
         {/*nor does it affect the chronology of transactions.*/}
       </div>
     ) : this.state.viewUser !== undefined ? (
-      <div>
-        {JSON.stringify(this.state.viewUser)}
+      <div style={{ margin: "5px" }}>
+        {this.state.viewUser.username}
         <br />
         <select
           onChange={(e) => {

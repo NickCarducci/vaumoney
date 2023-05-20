@@ -208,8 +208,8 @@ class Frame extends React.Component {
               color: "black",
               textDecoration: "none",
               position: "fixed",
-              left: "30px",
-              bottom: "40px"
+              right: "10px",
+              bottom: "0px"
             })}
           >
             <span
@@ -256,33 +256,6 @@ class Frame extends React.Component {
             >
               vaults.biz
             </a>
-
-            {!this.state.morewhy && (
-              <div //currency only as good as durable.
-                //Isn't the Office of the Comptroller of the Currency in charge of PayPal?
-                //Should everyone drop what they are doing and compete with Ticketmaster?
-                //Is a nation always down in terms of GDP?
-                //Wouldn't Independent be bad advice to describe Nick Carducci for Senate?
-                // /Aren't paying publishers alone allowed to prohibit certain ideas?
-                //would you be down r/richsaltneolib thetax.party
-                //democracy spoofs boss
-
-                //"we are all star babies." you take job in variable labor you harm
-                style={{
-                  width: "min-content", //Aren't paying publishers alone allowed to prohibit certain ideas?
-                  boxShadow: "-4px -4px 1px 1px rgb(240,130,190)",
-                  padding: "6px 4px",
-                  left: "30px",
-                  top: "40px",
-                  backgroundColor: "rgb(30,30,90)",
-                  borderRadius: "10px",
-                  textAlign: "left",
-                  color: "white",
-                  textDecoration: "none",
-                  position: "relative"
-                }}
-              ></div>
-            )}
           </div>
           <Authentication
             navigate={navigate}
