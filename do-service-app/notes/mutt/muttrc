@@ -1,0 +1,13 @@
+set mbox_type = Maildir
+set folder = ~/Maildir/
+set spoolfile = +/
+set realname = "DkVZ"
+set from = "dkvz@dkvz.eu"
+set use_envelope_from = yes
+set edit_headers = yes # Will allow us to
+change the from address from Mutt
+set record = +/sent/
+set sort = threads
+auto_view text/html # view html
+automatically
+alternative_order text/plain text/enriched text/html # save html for last

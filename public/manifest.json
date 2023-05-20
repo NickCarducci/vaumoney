@@ -1,0 +1,39 @@
+{
+  "display": "standalone",
+  "scope": "./",
+  "short_name": "Vaumoney Accounts",
+  "description": "Debenture probate elopement",
+  "screenshots": [
+    {
+      "alt": "no screenshots available yet",
+      "src": "/",
+      "type": "image/jpeg",
+      "sizes": "516x1116.67"
+    }
+  ],
+  "name": "Direct nonsale primary support",
+  "background_color": "#9749ff",
+  "icons": [
+    {
+      "src": "https://www.dl.dropboxusercontent.com/s/ia07x5p5zlr6w3w/Vaumoney%20logo%20%281%29.png?dl=0",
+      "sizes": "64x64 32x32 24x24 16x16 192x192 194x194 512x512",
+      "type": "image/ico"
+    }
+  ],
+  "start_url": "/",
+  "theme_color": "#9749ff",
+  "shortcuts": [
+    {
+      "name": "Home",
+      "url": "/",
+      "description": "Immediate partnerships",
+      "short_name": "VAU",
+      "icons": [
+        {
+          "src": "https://www.dl.dropboxusercontent.com/s/ia07x5p5zlr6w3w/Vaumoney%20logo%20%281%29.png?dl=0",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

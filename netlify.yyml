@@ -1,0 +1,7 @@
+[[redirects]]
+  from = "/backbank"
+  to = "https://8f9ab9c5c5f94d3c821f4394cb093fc8-us-east-1.alicloudapi.com"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+# https://www.netlifycms.org/docs/configuration-options/

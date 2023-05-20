@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  cursor: pointer;
+  font-family: "Muli", sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+}
+.input::placeholder {
+  display: flex;
+  z-index: 9999;
+  font-size: 16px;
+}
+input:focus {
+  outline: none;
+  box-shadow: 0.5px 0.5px 4px 0px cornflowerblue;
+  border: 0px solid rgba(81, 203, 238, 1);
+}

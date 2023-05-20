@@ -1,0 +1,16 @@
+myhostname = terminal.vau.money
+mydomain = vau.money
+myorigin = $mydomain
+inet_interfaces = all
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+mynetworks = 192.168.0.0/24, 127.0.0.0/8
+relay_domains =
+home_mailbox = Maildir/
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+
+virtual_mailbox_base = /home/host
+virtual_mailbox_domains = $myhostname
+virtual_mailbox_maps = @terminal.vau.money $virtual_mailbox_base/$myhostname
+virtual_uid_maps = static:1001 # user ID for user host
+virtual_gid_maps = static:1001 # group ID for user host
+virtual_transport = dovecot
