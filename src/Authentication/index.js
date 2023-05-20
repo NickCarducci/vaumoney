@@ -854,13 +854,7 @@ class FIREBASE_APP extends React.Component {
                 color: "white"
               }}
             />
-            <div
-              onClick={async () => {
-                paynow();
-              }}
-            >
-              Pay Now
-            </div>
+            <button type="submit">Pay Now</button>
           </div>
           From:
           <div
@@ -870,6 +864,7 @@ class FIREBASE_APP extends React.Component {
             }}
           >
             <input
+              required={true}
               placeholder="First"
               value={this.state.first}
               style={{ width: "33%" }}
@@ -885,6 +880,7 @@ class FIREBASE_APP extends React.Component {
               style={{ width: "33%" }}
             />
             <input
+              required={true}
               placeholder="Last"
               value={this.state.last}
               style={{ width: "33%" }}
