@@ -142,12 +142,12 @@ class Cash extends React.Component {
               (d.exists() ? updateDoc : setDoc)(
                 doc(firestore, "userDatas", this.props.auth.uid),
                 {
-                  [`stripe${digits}Link`]: deleteField()
+                  [`stripecustom${digits}Link`]: deleteField()
                 }
               ) //RESSEND(res, { statusText: "successful accountLink"});
                 .then(async () => {
                   updateDoc(doc(firestore, "users", this.props.auth.uid), {
-                    [`stripe${digits}Id`]: deleteField()
+                    [`stripecustom${digits}Id`]: deleteField()
                   });
                   this.deleteThese([stripeId]);
                   this.props.navigate("/");
