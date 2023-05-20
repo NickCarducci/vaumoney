@@ -315,7 +315,7 @@ class Cash extends React.Component {
         return this.props.getUserInfo();
       }*/
     };
-    const submitBankCard = async (bank = (payout) => payout === "bank") => {
+    /*const submitBankCard = async (bank = (payout) => payout === "bank") => {
       if (!user.address && !this.state.address)
         //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
         return this.setState({ openFormSecure: true }); //open to yet address
@@ -349,7 +349,7 @@ class Cash extends React.Component {
       } else {
       }
       this.setState({ [`submitStripe${bank ? "Bank" : "Card"}`]: card });
-    };
+    };*/
     const linksure = (x, custom) => {
       const status =
         user && user[`stripe${(custom ? "custom" : "") + shorter(x)}Link`];
@@ -615,7 +615,7 @@ class Cash extends React.Component {
           //(addr ? "" : " Please provide an address")
         ); //this answer was already purchased
         //if (!answer && !addr) return null;
-        this.setState({ openPaymentSecure: answer ? trust : null });
+        return this.setState({ openPaymentSecure: answer ? trust : null });
       }
       if (!this.state.address)
         return window.alert(
