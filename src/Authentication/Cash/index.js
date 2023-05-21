@@ -766,6 +766,14 @@ class Cash extends React.Component {
                               )}Id`]: deleteField()
                             }
                           );
+                          updateDoc(
+                            doc(firestore, "users", this.props.auth.uid),
+                            {
+                              [`stripecustom${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField()
+                            }
+                          );
                         })
                         .catch(standardCatch);
                     })
