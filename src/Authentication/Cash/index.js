@@ -863,6 +863,8 @@ class Cash extends React.Component {
                     ...personal
                   };
             const body = {
+              type:
+                this.state.payoutType === "bank" ? "us_bank_account" : "card",
               customer: {
                 ...edit,
                 invoice_prefix

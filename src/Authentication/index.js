@@ -763,6 +763,7 @@ class FIREBASE_APP extends React.Component {
           "Content-Type": "Application/JSON"
         },
         body: JSON.stringify({
+          type: this.state.payoutType === "bank" ? "us_bank_account" : "card",
           //paymentMethod: x.id,
           //customerId: user[`customer${sht}Id`],
           //storeId: this.state.chosenRecipient[`stripe83Id`],
