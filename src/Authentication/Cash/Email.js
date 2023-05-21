@@ -8,7 +8,9 @@ import {
   orderBy,
   limit,
   getFirestore,
-  getDoc
+  getDoc,
+  updateDoc,
+  doc
 } from "firebase/firestore";
 import { standardCatch } from "../FIREBASE_SUDO";
 import {
@@ -30,6 +32,7 @@ import firebase from "../init-firebase";
 import { countries } from "./countries";
 import { Operating, states } from "./utils";
 import Recipient from "./Recipient";
+import { shorter } from ".";
 
 export const specialFormatting = (x, numbersOk) =>
   x
@@ -117,6 +120,50 @@ class Email extends React.Component {
         if (this.state.payoutType !== "send cash") this.list();
       });
     }*/
+    if (this.props.address !== prevProps.address) {
+      const nothingschanged = Object.keys(this.props.address).every(
+        (key) => this.props.address[key] === this.props.user.address[key]
+      );
+      if (!nothingschanged)
+        var answer = window.confirm(
+          "Would you like to update your address to " +
+            JSON.stringify(this.props.address)
+        );
+      if (answer) {
+        updateDoc(doc(firestore, "userDatas", this.props.auth.uid), {
+          address: this.props.address
+        }).then(async () => {
+          const { user } = this.props;
+          const custom =
+            user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
+          const filler = custom ? "custom" : "";
+          await fetch("https://vault-co.in/updateaddress", {
+            method: "POST",
+            headers: {
+              "Access-Control-Request-Method": "POST",
+              "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
+              "Content-Type": "Application/JSON"
+            },
+            body: JSON.stringify({
+              storeId: this.props.user[
+                `stripe${filler + shorter(this.props.selectThisOne)}Id`
+              ],
+              personId: this.props.user[
+                `person${filler + shorter(this.props.selectThisOne)}Id`
+              ]
+            })
+          }) //stripe account, not plaid access token payout yet
+            .then(async (res) => await res.json())
+            .then(async (result) => {
+              if (result.status) return console.log(result);
+              if (result.error) return console.log(result);
+              if (!result.data) return console.log("dev error (Cash)", result);
+              console.log(result.data);
+            })
+            .catch(standardCatch);
+        });
+      }
+    }
   };
   list = async (bankcard, customerId) => {
     console.log("list ", bankcard, customerId);

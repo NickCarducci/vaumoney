@@ -585,7 +585,10 @@ class Cash extends React.Component {
                           */
                         [`stripe${
                           (custom ? "custom" : "") + shorter(trust.mcc)
-                        }Link`]: result.account.accountLink.url
+                        }Link`]: result.account.accountLink.url,
+                        [`person${
+                          (custom ? "custom" : "") + shorter(trust.mcc)
+                        }Id`]: result.account.person.id
                       }
                     ) //RESSEND(res, { statusText: "successful accountLink"});
                       .then(() => {
@@ -633,7 +636,7 @@ class Cash extends React.Component {
         }
         if (!this.state.stripe) return this.stripeemailaddress.current.click();
         const answer = window.confirm(
-          "Would you like a card?" +
+          "Would you like a card? YOU WILL BE CHARGED $2.99 this month and monthly until you cancel" +
             (user[`customer${shorter(trust.mcc)}Id`]
               ? " This time we will enable your account for issuing."
               : "")
@@ -667,6 +670,7 @@ class Cash extends React.Component {
         }}
       >
         <Email
+          address={this.state.address}
           stripe={this.state.stripe}
           stripePromise={this.props.stripePromise}
           ref={{
@@ -732,7 +736,9 @@ class Cash extends React.Component {
                     },
                     body: JSON.stringify({
                       deleteThese: [
-                        user[`cardholder${shorter(this.state.selectThisOne)}Id`]
+                        user[
+                          `stripecustom${shorter(this.state.selectThisOne)}Id`
+                        ]
                       ],
                       unSubThese: [
                         user[
@@ -812,6 +818,20 @@ class Cash extends React.Component {
             </div>
             <div
               onClick={async () => {
+                const { address: addr } = user;
+                const address = Object.keys(addr)
+                  .map((x) => {
+                    //console.log(remaining, event.value.address[next]);
+                    return addr[x]
+                      ? {
+                          [x]: addr[x]
+                        }
+                      : "";
+                  })
+                  .filter((x) => x !== "")
+                  .reduce(function (result, current) {
+                    return Object.assign(result, current);
+                  }, {});
                 await fetch("https://vault-co.in/issue", {
                   method: "POST",
                   headers: {
@@ -825,7 +845,9 @@ class Cash extends React.Component {
                   body: JSON.stringify({
                     cardholderId:
                       user[`cardholder${shorter(this.state.selectThisOne)}Id`],
-                    type: "physical"
+                    type: "physical",
+                    name: user.first + " " + user.last,
+                    address
                   })
                 }) //stripe account, not plaid access token payout yet
                   .then(async (res) => await res.json())
@@ -1286,48 +1308,105 @@ class Cash extends React.Component {
                     💳
                   </span>
                 </div>
-                {this.state.selectThisOne && (
-                  <div
-                    style={{
-                      margin: "10px",
-                      padding: "6px",
-                      color: !tru ? "white" : color,
-                      textDecoration: "underline",
-                      backgroundColor: "white"
-                    }}
-                    onClick={async () => {
-                      await fetch("https://vault-co.in/balance", {
-                        method: "POST",
-                        headers: {
-                          "Access-Control-Request-Method": "POST",
-                          "Access-Control-Request-Headers": [
-                            "Origin",
-                            "Content-Type"
-                          ], //allow referer
-                          "Content-Type": "Application/JSON"
-                        },
-                        body: JSON.stringify({
-                          storeId: user[`stripe${filler + shorter(x.mcc)}Id`]
-                        })
-                      }) //stripe account, not plaid access token payout yet
-                        .then(async (res) => await res.json())
-                        .then(async (result) => {
-                          if (result.status) return console.log(result);
-                          if (result.error) return console.log(result);
-                          if (!result.cashBalance)
-                            return console.log("dev error (Cash)", result);
-                          console.log(result.cashBalance);
-                          this.setState({
-                            [`balance${shorter(x.mcc)}`]: result.cashBalance
-                              .available
-                          });
-                        })
-                        .catch(standardCatch);
-                    }}
-                  >
-                    View Balance
-                  </div>
-                )}
+                <div style={{ display: "flex" }}>
+                  {this.state.selectThisOne && tru && (
+                    <div
+                      style={{
+                        margin: "10px",
+                        padding: "6px",
+                        color: !tru ? "white" : color,
+                        textDecoration: "underline",
+                        backgroundColor: "white"
+                      }}
+                      onClick={async () => {
+                        await fetch("https://vault-co.in/balance", {
+                          method: "POST",
+                          headers: {
+                            "Access-Control-Request-Method": "POST",
+                            "Access-Control-Request-Headers": [
+                              "Origin",
+                              "Content-Type"
+                            ], //allow referer
+                            "Content-Type": "Application/JSON"
+                          },
+                          body: JSON.stringify({
+                            storeId: user[`stripe${filler + shorter(x.mcc)}Id`]
+                          })
+                        }) //stripe account, not plaid access token payout yet
+                          .then(async (res) => await res.json())
+                          .then(async (result) => {
+                            if (result.status) return console.log(result);
+                            if (result.error) return console.log(result);
+                            if (!result.cashBalance)
+                              return console.log("dev error (Cash)", result);
+                            console.log(result.cashBalance);
+                            this.setState({
+                              [`balance${shorter(x.mcc)}`]: result.cashBalance
+                                .available
+                            });
+                          })
+                          .catch(standardCatch);
+                      }}
+                    >
+                      View Balance
+                    </div>
+                  )}
+                  {!user ||
+                  !user[`stripe${shorter(this.state.selectThisOne)}Id`] ||
+                  user[
+                    `stripecustom${shorter(this.state.selectThisOne)}Id`
+                  ] ? null : (
+                    <div
+                      onClick={async () => {
+                        const answer = window.confirm(
+                          "Are you sure? You'll have to remake the account."
+                        );
+                        if (answer)
+                          await fetch("https://vault-co.in/delete", {
+                            method: "POST",
+                            headers: {
+                              "Access-Control-Request-Method": "POST",
+                              "Access-Control-Request-Headers": [
+                                "Origin",
+                                "Content-Type"
+                              ], //allow referer
+                              "Content-Type": "Application/JSON"
+                            },
+                            body: JSON.stringify({
+                              deleteThese: [
+                                user[
+                                  `cardholder${shorter(
+                                    this.state.selectThisOne
+                                  )}Id`
+                                ]
+                              ]
+                            })
+                          }) //stripe account, not plaid access token payout yet
+                            .then(async (res) => await res.json())
+                            .then(async (result) => {
+                              if (result.status) return console.log(result);
+                              if (result.error) return console.log(result);
+                              if (!result.data)
+                                return console.log("dev error (Cash)", result);
+                              console.log(result.data);
+
+                              updateDoc(
+                                doc(firestore, "users", this.props.auth.uid),
+                                {
+                                  [`stripe${shorter(
+                                    this.state.selectThisOne
+                                  )}Id`]: deleteField()
+                                }
+                              ).then(() => {
+                                window.location.reload();
+                              });
+                            });
+                      }}
+                    >
+                      &times;
+                    </div>
+                  )}
+                </div>
               </div>
             ) : null;
           })}
