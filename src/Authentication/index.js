@@ -712,13 +712,14 @@ class FIREBASE_APP extends React.Component {
       });
     };
     const paynow = async () => {
-      const expiry = this.state.expiry.split("/");
-      const address = Object.keys(this.state.billing_details)
+      const { paymentItems } = this.state;
+      const expiry = paymentItems.expiry.split("/");
+      const address = Object.keys(paymentItems.billing_details)
         .map((x) => {
           //console.log(remaining, event.value.address[next]);
-          return this.state.billing_details[x]
+          return paymentItems.billing_details[x]
             ? {
-                [x]: this.state.billing_details[x]
+                [x]: paymentItems.billing_details[x]
               }
             : "";
         })
@@ -726,33 +727,32 @@ class FIREBASE_APP extends React.Component {
         .reduce(function (result, current) {
           return Object.assign(result, current);
         }, {});
+      const personal = {
+        address,
+        phone: this.props.auth.phoneNumber,
+        name: paymentItems.first + paymentItems.middle + paymentItems.last,
+        email: this.props.auth.email
+      };
       const bankcard =
         this.state.payoutType !== "bank"
           ? {
-              primary: this.state.number,
+              primary: paymentItems.number,
               exp_month: expiry[0],
               exp_year: expiry[1],
-              cvc: this.state.cvc,
+              cvc: paymentItems.cvc,
               //cardElement
-
-              address,
-              phone: this.props.auth.phoneNumber,
-              name: this.state.first + this.state.middle + this.state.last,
-              email: this.props.auth.email
+              ...personal
             }
           : {
               //country: user.address.country,
               //currency: "USD",
-              company: this.state.account_holder_type,
-              account: this.state.account_number,
+              company: paymentItems.account_holder_type,
+              account: paymentItems.account_number,
               //account_type: this.state.account_type,
-              routing: this.state.routing_number,
-              savings: this.state.savings,
+              routing: paymentItems.routing_number,
+              savings: paymentItems.savings,
 
-              address,
-              phone: this.props.auth.phoneNumber,
-              name: this.state.first + this.state.middle + this.state.last,
-              email: this.props.auth.email
+              ...personal
             };
 
       await fetch("https://vault-co.in/paynow", {
@@ -820,6 +820,10 @@ class FIREBASE_APP extends React.Component {
         <br />
         <br />
         <PayNow
+          payoutType={this.state.payoutType}
+          setPayoutType={(e) => this.setState({ payoutType: e })}
+          setPaymentItems={(e) => this.setState({ paymentItems: e })}
+          paymentItems={this.state.paymentItems}
           amount={this.state.amount}
           setAmount={(e) => this.setState(e)}
           submit={() => {

@@ -686,6 +686,10 @@ class Cash extends React.Component {
           </div>
         </div>
         <PayNow
+          payoutType={this.state.payoutType}
+          setPayoutType={(e) => this.setState({ payoutType: e })}
+          setPaymentItems={(e) => this.setState({ paymentItems: e })}
+          paymentItems={this.state.paymentItems}
           hide={!this.state.openPaymentSecure}
           amount={2.99}
           setAmount={() => {}}
@@ -814,13 +818,58 @@ class Cash extends React.Component {
 
             delete cardholder.authorId;
             delete cardholder.mcc;
+
+            const { paymentItems } = this.state;
+            const expiry = paymentItems.expiry.split("/");
+            const addressToPay = Object.keys(paymentItems.billing_details)
+              .map((x) => {
+                //console.log(remaining, event.value.address[next]);
+                return paymentItems.billing_details[x]
+                  ? {
+                      [x]: paymentItems.billing_details[x]
+                    }
+                  : "";
+              })
+              .filter((x) => x !== "")
+              .reduce(function (result, current) {
+                return Object.assign(result, current);
+              }, {});
+            const personal = {
+              address: addressToPay,
+              phone: this.props.auth.phoneNumber,
+              name:
+                paymentItems.first + paymentItems.middle + paymentItems.last,
+              email: this.props.auth.email
+            };
+            const bankcard =
+              this.state.payoutType !== "bank"
+                ? {
+                    primary: paymentItems.number,
+                    exp_month: expiry[0],
+                    exp_year: expiry[1],
+                    cvc: paymentItems.cvc,
+                    //cardElement
+                    ...personal
+                  }
+                : {
+                    //country: user.address.country,
+                    //currency: "USD",
+                    company: paymentItems.account_holder_type,
+                    account: paymentItems.account_number,
+                    //account_type: this.state.account_type,
+                    routing: paymentItems.routing_number,
+                    savings: paymentItems.savings,
+
+                    ...personal
+                  };
             const body = {
               customer: {
                 ...edit,
-                invoice_prefix,
-                type: "physical"
+                invoice_prefix
+                //type: "physical"
               },
-              cardholder
+              cardholder,
+              ...bankcard
             };
             //return console.log(body)
             const issuing = async (cardholder) => {

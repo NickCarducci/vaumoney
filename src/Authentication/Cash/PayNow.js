@@ -22,6 +22,11 @@ export default class PayNow extends React.Component {
     routing_number: "110000000",
     savings: "checking"
   };
+  componentDidUpdate = (prevProps) => {
+    if (this.state !== this.props.paymentItems) {
+      this.props.setPaymentItems && this.props.setPaymentItems(this.state);
+    }
+  };
   render() {
     const textu = (e, name, exp) => {
       const value = e.target.value;
@@ -237,15 +242,16 @@ export default class PayNow extends React.Component {
         <select
           //value={this.state.payoutType}
           onChange={(e) => {
-            if (this.state.payoutType !== e.target.value)
-              this.setState({ payoutType: e.target.value });
+            if (this.props.payoutType !== e.target.value)
+              this.props.setPayoutType(e.target.value);
           }}
         >
           {["send cash", "bank", "card"].map((x) => {
             return <option key={x + "payout"}>{x}</option>;
           })}
         </select>
-        {this.state.payoutType !== "bank" ? (
+        {this.props.payoutType === "send cash" ? null : this.props
+            .payoutType !== "bank" ? (
           /*<div id="card-number" />
                                     <div id="card-exp" />
                                   <div id="card-cvc" />*/
