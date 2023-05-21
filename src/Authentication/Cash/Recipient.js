@@ -55,6 +55,10 @@ export default class Recipient extends React.Component {
       already =
         this.props.chosenRecipient &&
         this.props.chosenRecipient.id === recipient.id;
+    const custom =
+      user &&
+      user[`stripecustom${this.props.shorter(this.props.selectThisOne)}Id`];
+    const filler = custom ? "custom" : "";
     return (
       <div
         key={recipient.username}
@@ -107,7 +111,9 @@ export default class Recipient extends React.Component {
           shorter={this.props.shorter}
           show={
             user &&
-            user[`stripe${this.props.shorter(this.state.selectThisOne)}Id`]
+            user[
+              `stripe${filler + this.props.shorter(this.state.selectThisOne)}Id`
+            ]
           }
           selectThisOne={this.state.selectThisOne}
           stripePromise={stripePromise}

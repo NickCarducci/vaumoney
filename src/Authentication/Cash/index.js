@@ -10,7 +10,7 @@ import {
   updateDoc,
   deleteField
 } from "firebase/firestore";
-import { standardCatch } from "../FIREBASE_SUDO";
+import { specialFormatting, standardCatch } from "../FIREBASE_SUDO";
 import Email from "./Email";
 import {
   Elements,
@@ -19,6 +19,9 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import MicroVerify from "./MicroVerify.js";
+import { countries } from "./countries.js";
+import { states } from "./utils.js";
+import PayNow from "./PayNow.js";
 //"stripePromise"
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -639,12 +642,51 @@ class Cash extends React.Component {
           flexDirection: "column"
         }}
       >
-        <form
-          style={{
-            display: this.state.openPaymentSecure ? "block" : "none"
+        <Email
+          stripePromise={this.props.stripePromise}
+          ref={{
+            current: {
+              FIREBASE_MULTI: this.props.FIREBASE_MULTI
+            }
           }}
-          onSubmit={async (e) => {
-            e.preventDefault();
+          scrollTop={this.props.scrollTop}
+          scrolling={this.props.scrolling}
+          getUserInfo={getUserInfo}
+          user={user}
+          auth={this.props.auth}
+          noAccountYetArray={noAccountYetArray}
+          width={this.props.width}
+          openListedTransations={this.props.openListedTransations}
+          transactions={this.props.transactions}
+          saveaddress={(e) => this.setState(e)}
+          logoutofapp={this.props.logoutofapp}
+          navigate={this.props.navigate}
+          selectThisOne={this.state.selectThisOne}
+          linksure={linksure}
+          shorter={shorter}
+        />
+        <div
+          style={{
+            padding: "4px 0px",
+            display: this.state.openPaymentSecure ? "flex" : "none",
+            width: "100%",
+            justifyContent: "space-between"
+          }}
+        >
+          $2/mo
+          <div
+            onClick={() => {
+              this.setState({
+                openPaymentSecure: false
+              });
+            }}
+          >
+            &times;
+          </div>
+        </div>
+        <PayNow
+          hide={!this.state.openPaymentSecure}
+          submit={async () => {
             const { openPaymentSecure: trust } = this.state;
             const { address: addr, first, last } = user;
             if (
@@ -658,8 +700,8 @@ class Cash extends React.Component {
               purchase(trust, payments);
             }
             /*if (!addr)
-            //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
-            return this.setState({ openFormSecure: true });*/
+          //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
+          return this.setState({ openFormSecure: true });*/
 
             const address = Object.keys(addr)
               .map((x) => {
@@ -692,12 +734,12 @@ class Cash extends React.Component {
               description: trust.description
             };
             /*setDoc(
-            doc(
-              collection(firestore, "customers"),
-              trust.mcc + this.props.auth.uid
-            ),
-            edit
-          ).then(() => {*/
+          doc(
+            collection(firestore, "customers"),
+            trust.mcc + this.props.auth.uid
+          ),
+          edit
+        ).then(() => {*/
             var cardholder = {
               authorId: this.props.auth.uid,
               mcc: trust.mcc,
@@ -715,12 +757,12 @@ class Cash extends React.Component {
               }
             };
             /*setDoc(
-              doc(
-                collection(firestore, "cardholders"),
-                trust.mcc + this.props.auth.uid
-              ),
-              cardholder
-            ).then(async (docRef) => {*/
+            doc(
+              collection(firestore, "cardholders"),
+              trust.mcc + this.props.auth.uid
+            ),
+            cardholder
+          ).then(async (docRef) => {*/
             //no need to get ref.id
             //neither for prefix count
             //nor customer + cardholder
@@ -919,29 +961,6 @@ class Cash extends React.Component {
             // { keyvalue },"firestore store id (then callback)"
             //plaidLink payouts account.details_submitted;
           }}
-        ></form>
-        <Email
-          stripePromise={this.props.stripePromise}
-          ref={{
-            current: {
-              FIREBASE_MULTI: this.props.FIREBASE_MULTI
-            }
-          }}
-          scrollTop={this.props.scrollTop}
-          scrolling={this.props.scrolling}
-          getUserInfo={getUserInfo}
-          user={user}
-          auth={this.props.auth}
-          noAccountYetArray={noAccountYetArray}
-          width={this.props.width}
-          openListedTransations={this.props.openListedTransations}
-          transactions={this.props.transactions}
-          saveaddress={(e) => this.setState(e)}
-          logoutofapp={this.props.logoutofapp}
-          navigate={this.props.navigate}
-          selectThisOne={this.state.selectThisOne}
-          linksure={linksure}
-          shorter={shorter}
         />
 
         {this.state.selectThisOne && linksure(this.state.selectThisOne) && (
@@ -967,7 +986,10 @@ class Cash extends React.Component {
             accountId: user[`stripe${shtr}Id`],
             link: user[`stripe${shtr}Link`]*/
             //console.log(tru, x.mcc, this.state);
-            const tru = user && user[`stripe${shorter(x.mcc)}Id`];
+            const custom = user && user[`stripecustom${shorter(x.mcc)}Id`];
+            const tru = custom
+              ? custom
+              : user && user[`stripe${shorter(x.mcc)}Id`];
 
             const color =
               x.mcc === "7999"
@@ -987,13 +1009,15 @@ class Cash extends React.Component {
                   ? "rgb(220,210,110)"
                   : "chocolate"
                 : "black";
+            const filler = custom ? "custom" : "";
             //const issuing = x.capabilities && x.capabilities.card_issuing;
-            const issuing = user && user[`cardholder${shorter(x.mcc)}Id`];
+            const issuing =
+              user && user[`cardholder${filler + shorter(x.mcc)}Id`];
             return (x.mcc === "8398" ||
-              (user && user[`stripe83Id`] && x.mcc === "7011") ||
+              (user && user[`stripe${filler}83Id`] && x.mcc === "7011") ||
               (user &&
-                user[`stripe83Id`] &&
-                user[`stripe70Id`] &&
+                user[`stripe${filler}83Id`] &&
+                user[`stripe${filler}70Id`] &&
                 ["8099", "8299"].includes(
                   x.mcc
                 ))) /*||
@@ -1021,7 +1045,7 @@ class Cash extends React.Component {
                     (!tru || this.state.requestBuyer === x.mcc
                       ? "dotted "
                       : "solid ") +
-                    (user && user[`customer${shorter(x.mcc)}Id`]
+                    (user && user[`customer${filler + shorter(x.mcc)}Id`]
                       ? "black"
                       : color)
                 }}
@@ -1063,7 +1087,7 @@ class Cash extends React.Component {
                           "Content-Type": "Application/JSON"
                         },
                         body: JSON.stringify({
-                          customerId: user[`customer${shorter(x.mcc)}Id`]
+                          storeId: user[`stripe${filler + shorter(x.mcc)}Id`]
                         })
                       }) //stripe account, not plaid access token payout yet
                         .then(async (res) => await res.json())

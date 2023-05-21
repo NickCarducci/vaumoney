@@ -27,14 +27,16 @@ class MicroVerify extends React.Component {
       });
     };
     const space = " ";
+    const custom = user && user[`stripecustom${shorter(selectThisOne)}Id`];
+    const filler = custom ? "custom" : "";
     return (
       selectThisOne &&
       user &&
-      user[`stripe${shorter(selectThisOne)}Id`] &&
+      user[`stripe${filler + shorter(selectThisOne)}Id`] &&
       !linksure(selectThisOne) && (
         <div>
-          {user[`customer${shorter(selectThisOne)}Id`] &&
-            user[`cardholder${shorter(selectThisOne)}Id`] && (
+          {user[`customer${filler + shorter(selectThisOne)}Id`] &&
+            user[`cardholder${filler + shorter(selectThisOne)}Id`] && (
               <div>
                 <h2
                   style={{
@@ -110,11 +112,14 @@ class MicroVerify extends React.Component {
                     })}
                   </select>
                 </h2>
-                {user && user[`micro${shorter(selectThisOne)}Link`] && (
-                  <a href={user[`micro${shorter(selectThisOne)}Link`]}>
-                    Verify
-                  </a>
-                )}
+                {user &&
+                  user[`micro${filler + shorter(selectThisOne)}Link`] && (
+                    <a
+                      href={user[`micro${filler + shorter(selectThisOne)}Link`]}
+                    >
+                      Verify
+                    </a>
+                  )}
                 {this.state.clientSecret && this.props.payoutType !== "setup" && (
                   //Are Stripe Bank and Card Elements being deprecated for sources' deprecation?
                   <Elements
@@ -445,7 +450,7 @@ class MicroVerify extends React.Component {
               </div>
             )}
           <div style={{ fontSize: "12px" }}>
-            spending {user[`stripe${shorter(selectThisOne)}Id`]}
+            spending {user[`stripe${filler + shorter(selectThisOne)}Id`]}
           </div>
         </div>
       )

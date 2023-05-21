@@ -114,6 +114,10 @@ class Email extends React.Component {
     }*/
   };
   list = async (bankcard, customerId) => {
+    const custom = this.props.user[
+      `stripecustom${this.props.shorter(this.props.selectThisOne)}Id`
+    ];
+    const filler = custom ? "custom" : "";
     console.log("list ", bankcard, customerId);
     await fetch("https://vault-co.in/list", {
       method: "POST",
@@ -131,7 +135,9 @@ class Email extends React.Component {
         customerId: customerId
           ? customerId
           : this.props.user[
-              `customer${this.props.shorter(this.props.selectThisOne)}Id`
+              `customer${
+                filler + this.props.shorter(this.props.selectThisOne)
+              }Id`
             ]
       })
     }) //stripe account, not plaid access token payout yet
@@ -214,6 +220,9 @@ class Email extends React.Component {
         }
       });
     };
+    const custom =
+      user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
+    const filler = custom ? "custom" : "";
     return (
       <div>
         <div
@@ -638,7 +647,7 @@ class Email extends React.Component {
               );
             })}
         {!this.state.chosenRecipient ? null : !user ||
-          !user[`stripe${shorter(this.props.selectThisOne)}Id`] ? (
+          !user[`stripe${filler + shorter(this.props.selectThisOne)}Id`] ? (
           "choose an account"
         ) : (
           <div style={{ display: "flex" }}>
@@ -654,7 +663,11 @@ class Email extends React.Component {
 
                     this.list(
                       e.target.value === "bank" ? "us_bank_account" : "card",
-                      user[`customer${shorter(this.props.selectThisOne)}Id`]
+                      user[
+                        `customer${
+                          filler + shorter(this.props.selectThisOne)
+                        }Id`
+                      ]
                     );
                   });
               }}
