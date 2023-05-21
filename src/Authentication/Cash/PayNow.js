@@ -20,7 +20,10 @@ export default class PayNow extends React.Component {
     account_holder_type: "individual",
     account_number: "000123456789",
     routing_number: "110000000",
-    savings: "checking"
+    savings: "checking",
+    first: "",
+    middle: "",
+    last: ""
   };
   componentDidUpdate = (prevProps) => {
     if (this.state !== this.props.paymentItems) {
@@ -110,6 +113,11 @@ export default class PayNow extends React.Component {
             required={true}
             placeholder="First"
             value={this.state.first}
+            onChange={(e) => {
+              this.setState({
+                first: e.target.value
+              });
+            }}
             style={{ width: "33%" }}
           />
           <input
@@ -126,6 +134,11 @@ export default class PayNow extends React.Component {
             required={true}
             placeholder="Last"
             value={this.state.last}
+            onChange={(e) => {
+              this.setState({
+                last: e.target.value
+              });
+            }}
             style={{ width: "33%" }}
           />
         </div>
