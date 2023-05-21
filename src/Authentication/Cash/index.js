@@ -362,6 +362,7 @@ class Cash extends React.Component {
     };
     //console.log(linksure(this.state.selectThisOne));
     //console.log(this.props.user);
+    const { paymentItems } = this.state;
     const purchase = async (x, custom) => {
       console.log("purchase");
       //customerResult,
@@ -374,7 +375,6 @@ class Cash extends React.Component {
           }); //Why do synchronous intrinsic JSON functions need a scope declaration?
           return r(done);
         }*/
-
       const payouts = {
           schedule: {
             interval: "manual" //400 invalid_request_error
@@ -396,8 +396,18 @@ class Cash extends React.Component {
         date = String(Math.floor(new Date(now).getTime() / 1000)); //new Date(now).getTime() / 1000, // - 14400, //
       // return console.log("name", name);
       const trust = myStripeAccounts.find((e) => e.mcc === x.mcc),
-        first = user.first ? user.first : this.state.first,
-        last = user.last ? user.last : this.state.last,
+        first =
+          paymentItems.first !== ""
+            ? paymentItems.first
+            : user.first
+            ? user.first
+            : this.state.first,
+        last =
+          paymentItems.last !== ""
+            ? paymentItems.last
+            : user.last
+            ? user.last
+            : this.state.last,
         name = first + " " + last,
         companyName = `Vaumoney ${trust.account} ` + name,
         ownership_declaration = {
@@ -486,8 +496,8 @@ class Cash extends React.Component {
           country: "US",
           uid: this.props.auth.uid,
           newAccount: newAccount,
-          first: this.state.first,
-          last: this.state.last
+          first,
+          last
         })
       }) //stripe account, not plaid access token payout yet
         .then(async (res) => await res.json())
@@ -498,19 +508,26 @@ class Cash extends React.Component {
           //If there is not (accountLink), the new stripe (account.id) stripeId is caught here
 
           const { address: addr } = this.state,
-            //if (!this.props.user.stripeId) {
-            personResult = await this.state.stripe.createToken("person", {
+            address = Object.keys(paymentItems.billing_details).every(
+              (key) =>
+                paymentItems.billing_details[key] !== "" ||
+                ["line2"].includes(key)
+            )
+              ? paymentItems.billing_details
+              : addr;
+          //if (!this.props.user.stripeId) {
+          const personResult = await this.state.stripe.createToken("person", {
               relationship: { owner: true },
               first_name: first,
 
               last_name: last,
               email: this.props.auth.email,
               phone: this.props.auth.phoneNumber,
-              address: addr
+              address
             }),
             companyResult = await this.state.stripe.createToken("account", {
               company: {
-                address: addr,
+                address,
                 name: companyName, //this.state.billing_details.name,
                 structure: "unincorporated_association", //trust // "sole_proprietorship",
                 phone: this.props.auth.phoneNumber, //owners are provided after the account.person
@@ -765,15 +782,18 @@ class Cash extends React.Component {
                                 this.state.selectThisOne
                               )}Id`]: deleteField()
                             }
-                          );
-                          updateDoc(
-                            doc(firestore, "users", this.props.auth.uid),
-                            {
-                              [`stripecustom${shorter(
-                                this.state.selectThisOne
-                              )}Id`]: deleteField()
-                            }
-                          );
+                          ).then(() => {
+                            updateDoc(
+                              doc(firestore, "users", this.props.auth.uid),
+                              {
+                                [`stripecustom${shorter(
+                                  this.state.selectThisOne
+                                )}Id`]: deleteField()
+                              }
+                            ).then(() => {
+                              window.location.reload();
+                            });
+                          });
                         })
                         .catch(standardCatch);
                     })
