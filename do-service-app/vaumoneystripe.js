@@ -176,7 +176,7 @@ var statusCode = 200,
   statusText = "ok";
 //https://support.stripe.com/questions/know-your-customer-(kyc)-requirements-for-connected-accounts
 issue
-  .post("/customer", async (req, res) => {
+  .post("/issue", async (req, res) => {
     //submit that information using the Stripe API
     //vau.money/docs
     //https://stripe.com/docs/connect/identity-verification-api
@@ -196,7 +196,7 @@ issue
       .create(newCard)
       .then(async (card) => await setupIntent(req, res, card)) //customer: res.body.storeId
       //payment_method:card.id https://stripe.com/docs/api/setup_intents/create
-      .catch((e) => standardCatch(res, e, {}, "create customer"));
+      .catch((e) => standardCatch(res, e, {}, "create issue"));
   })
   .post("/redo", async (req, res) => {
     if (allowOriginType(req.headers.origin, res))
@@ -324,9 +324,9 @@ var lastLink; //function (){}//need a "function" not fat scope to hoist a promis
           } //newCard
         : {
             us_bank_account: {
-              account_holder_type: "company", //"individual"
+              account_holder_type: req.body.company, //"individual"
               account_number: req.body.account,
-              account_type: "checking", //"savings"
+              account_type: req.body.savings, //"savings"
               routing_number: req.body.routing
             }
           }), //newBank
@@ -458,22 +458,25 @@ attach
         progress: "yet to surname factor digit counts.."
       });
 
-    const cashBalance = await stripe.customers
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: req.body.storeId
+    });
+    /*const cashBalance = await stripe.customers
       .retrieveCashBalance(req.body.customerId)
       .catch((e) =>
         standardCatch(res, e, {}, "cash balance (retrieve callback)")
-      );
+      );*/
 
-    if (!cashBalance.available)
+    if (!balance.available)
       return RESSEND(res, {
         statusCode,
         statusText,
-        error: "no go cashBalance retrieve"
+        error: "no go balance retrieve"
       });
     RESSEND(res, {
       statusCode,
       statusText,
-      cashBalance
+      balance
     });
   })
   .post("/generate", async (req, res) => {
@@ -702,17 +705,71 @@ attach
     if (!cus.id) {
       return RESSEND(res, failOpening(req, "customer"));
     }
-    const ich = await /*promiseCatcher(
+    declarePaymentMethod(
+      { body: { ...req.body, customerId: cus.id } },
+      res,
+      optionsPayments(req),
+      async (cardId) => {
+        //payIntent((req, cardId), res, "pay now");
+
+        /*const price = await stripe.prices.create({
+        unit_amount: 2000,
+        currency: 'usd',
+        recurring: {interval: 'month'},
+        product: 'prod_NvpVIn9i6jPmrb',
+      });
+
+      if (!price.id) {
+        return RESSEND(res, failOpening(req, "price"));
+      }*/
+
+        const subscription = await stripe.subscriptions.create({
+          customer: cus.id,
+          items: [
+            {
+              price_data: {
+                currency: "usd",
+                product: "prod_NvpVIn9i6jPmrb",
+                unit_amount_decimal: "2.99",
+                recurring: {
+                  interval: "month",
+                  interval_count: "1"
+                }
+              },
+              quantity: "1"
+            }
+          ],
+          //on_behalf_of: "acct_1N7lC0Gg4Sg1xxEQ",
+          default_payment_method: cardId,
+          expand: ["latest_invoice.payment_intent"],
+          transfer_data: {
+            destination: "acct_1N7lC0Gg4Sg1xxEQ"
+          }
+        });
+        if (!subscription.id) {
+          return RESSEND(res, failOpening(req, "cardholder"));
+        }
+        const ich = await /*promiseCatcher(
     r,
     "cardholder",*/
-    stripe.issuing.cardholders
-      .create(req.body.cardholder)
-      .catch((e) => standardCatch(res, e, {}, "cardholder (create callback)"));
-    if (!ich.id) {
-      return RESSEND(res, failOpening(req, "cardholder"));
-    }
+        stripe.issuing.cardholders
+          .create(req.body.cardholder)
+          .catch((e) =>
+            standardCatch(res, e, {}, "cardholder (create callback)")
+          );
+        if (!ich.id) {
+          return RESSEND(res, failOpening(req, "cardholder"));
+        }
 
-    RESSEND(res, { statusCode, statusText, customer: cus, cardholder: ich });
+        RESSEND(res, {
+          statusCode,
+          statusText,
+          customer: cus,
+          cardholder: ich,
+          subscription: subscription
+        });
+      }
+    );
   })
   /*.post("/assess", async (req, res) => {
     //assessment (the) paymentMethod "link" to account
@@ -891,6 +948,60 @@ attach
         statusCode,
         statusText,
         data: "none to delete"
+      });
+  })
+  .post("/unsub", async (req, res) => {
+    //Can you call to resolve an asynchronous function from Express middleware that's
+    //declared in the Node.js process' scope?
+    var origin = refererOrigin(req, res);
+    if (!req.body || allowOriginType(origin, res))
+      return RESSEND(res, {
+        statusCode,
+        statusText,
+        progress: "yet to surname factor digit counts.."
+      });
+
+    //'sub_1NACa3GVa6IKUDzpbBHWB11C'
+    var unSubThese = req.body.unSubThese;
+    if (unSubThese && unSubThese.constructor === Array) {
+      Promise.all(
+        unSubThese.map(
+          async (x) =>
+            await new Promise(
+              async (r) =>
+                await stripe.subscriptions
+                  .del(x)
+                  .then(async () => {
+                    r("{}");
+                  })
+                  .catch((e) => {
+                    const done = JSON.stringify(e);
+                    return r(done);
+                  })
+
+              /*async (x) => {
+      try {
+        return deletethisone(x);
+      } catch (e) {
+        RESSEND(res, failOpening(req, "accounts"));
+      }
+    }*/
+            )
+        )
+      );
+      //.then(() => {
+      RESSEND(res, {
+        statusCode,
+        statusText,
+        data: "ok unsubbed"
+      });
+      //}) //prefixMap
+      //.catch((e) => standardCatch(res, e, {}, "account (delete callback)"));
+    } else
+      RESSEND(res, {
+        statusCode,
+        statusText,
+        data: "none to unSub"
       });
   })
   .post("/beneficiary", async (req, res) => {
