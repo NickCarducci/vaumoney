@@ -656,9 +656,10 @@ class Cash extends React.Component {
           auth={this.props.auth}
           noAccountYetArray={noAccountYetArray}
           width={this.props.width}
+          openPaymentSecure={this.state.openPaymentSecure}
           openListedTransations={this.props.openListedTransations}
           transactions={this.props.transactions}
-          saveaddress={(e) => this.setState(e)}
+          setCash={(e) => this.setState(e)}
           logoutofapp={this.props.logoutofapp}
           navigate={this.props.navigate}
           selectThisOne={this.state.selectThisOne}

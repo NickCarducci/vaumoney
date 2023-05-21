@@ -103,6 +103,11 @@ class Email extends React.Component {
             : ""
       });
     }
+    if (this.props.openPaymentSecure !== prevProps.openPaymentSecure) {
+      this.setState({
+        openFormSecure: false
+      });
+    }
     /*if (
       this.props.user !== prevProps.user ||
       //this.props.selectThisOne !== this.state.lastSelectThisOne
@@ -167,6 +172,7 @@ class Email extends React.Component {
           emailAuth: true,
           openFormSecure: true
         });
+        this.props.setCash({ openPaymentSecure: false });
       }
       /*const missing = Object.keys(
         this.state.billing_details
@@ -736,7 +742,7 @@ class Email extends React.Component {
                             return (
                               <STRIPE_ADDRESS
                                 saveaddress={(e) =>
-                                  this.props.saveaddress({
+                                  this.props.setCash({
                                     ...e,
                                     last: this.state.billing_details.last,
                                     first: this.state.billing_details.first
