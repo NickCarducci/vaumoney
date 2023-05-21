@@ -374,6 +374,7 @@ class Email extends React.Component {
               )
             ) : (
               <div
+                ref={this.props.stripeemailaddress}
                 onClick={async () => {
                   /*if (!this.state.account)
               return this.setState({ openLinkToStripe: true },()=>{
@@ -451,7 +452,8 @@ class Email extends React.Component {
                   margin: "10px",
                   width: "36px",
                   top: "0px",
-                  border: "1px solid",
+                  border:
+                    "1px solid" + (this.props.stripe ? " pink" : " black"),
                   height: "36px",
                   backgroundColor:
                     !this.state.submitStripe && this.state.openFormSecure

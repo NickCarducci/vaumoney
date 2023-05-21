@@ -545,6 +545,7 @@ class Cash extends React.Component {
               "Content-Type": "Application/JSON"
             },
             body: JSON.stringify({
+              type: custom ? "custom" : "standard", //standard
               mcc: trust.mcc,
               accountId: result.account.id,
               person: {
@@ -572,7 +573,7 @@ class Cash extends React.Component {
                     (d.exists() ? updateDoc : setDoc)(
                       doc(firestore, "userDatas", this.props.auth.uid),
                       {
-                        address: addr,
+                        address,
                         first,
                         last,
                         /*
@@ -587,17 +588,18 @@ class Cash extends React.Component {
                         }Link`]: result.account.accountLink.url
                       }
                     ) //RESSEND(res, { statusText: "successful accountLink"});
-                      .then(() => {});
+                      .then(() => {
+                        //8398
+                        //6540
+                        const answer = window.confirm(
+                          "Want to go along to submit details instead of passing " +
+                            "them by for later and just hang out instead?"
+                        );
+                        if (answer)
+                          window.location.href = result.account.accountLink.url;
+                      });
                   }
                 );
-
-              //8398
-              //6540
-              const answer = window.confirm(
-                "Want to go along to submit details instead of passing " +
-                  "them by for later and just hang out instead?"
-              );
-              if (answer) window.location.href = result.account.accountLink.url;
             })
             .catch((x) => standardCatch(x, "/beneficiary"));
         })
@@ -629,6 +631,7 @@ class Cash extends React.Component {
           );
           //submitBankCard();
         }
+        if (!this.state.stripe) return this.stripeemailaddress.current.click();
         const answer = window.confirm(
           "Would you like a card?" +
             (user[`customer${shorter(trust.mcc)}Id`]
@@ -649,6 +652,8 @@ class Cash extends React.Component {
       );
       if (answer) purchase(x);
     };
+    //console.log("stripe", this.state.stripe);
+    //console.log("paymentItems", paymentItems);
     return (
       <div
         style={{
@@ -662,6 +667,7 @@ class Cash extends React.Component {
         }}
       >
         <Email
+          stripe={this.state.stripe}
           stripePromise={this.props.stripePromise}
           ref={{
             current: {
@@ -857,9 +863,6 @@ class Cash extends React.Component {
               if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
                 const payments = true;
                 purchase(trust, payments);
-
-                if (!this.state.stripe)
-                  return this.stripeemailaddress.current.click();
               }
               /*if (!addr)
           //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
