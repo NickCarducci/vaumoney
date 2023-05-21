@@ -819,33 +819,9 @@ class FIREBASE_APP extends React.Component {
         </select>
         <br />
         <br />
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <input
-            required={true}
-            placeholder="amount to send"
-            //type="number"
-            value={this.state.amount}
-            onChange={(e) =>
-              this.setState({
-                amount: e.target.value
-              })
-            }
-            style={{
-              display: "flex",
-              position: "relative",
-              backgroundColor: "rgb(25,35,25)",
-              borderBottom: "1px white solid",
-              height: "36px",
-              width: "50px",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white"
-            }}
-          />
-          <button type="submit">Pay Now</button>
-        </div>
-        From:
         <PayNow
+          amount={this.state.amount}
+          setAmount={(e) => this.setState(e)}
           submit={() => {
             var answer = window.confirm(
               "Pay " +

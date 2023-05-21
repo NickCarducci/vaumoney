@@ -673,7 +673,7 @@ class Cash extends React.Component {
             justifyContent: "space-between"
           }}
         >
-          $2/mo
+          $2.99/mo
           <div
             onClick={() => {
               this.setState({
@@ -686,6 +686,7 @@ class Cash extends React.Component {
         </div>
         <PayNow
           hide={!this.state.openPaymentSecure}
+          amount={2.99}
           submit={async () => {
             const { openPaymentSecure: trust } = this.state;
             const { address: addr, first, last } = user;
