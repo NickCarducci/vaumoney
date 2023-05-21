@@ -478,8 +478,8 @@ class Cash extends React.Component {
       //var custom = true;
       if (!custom) {
         delete newAccount.tos_acceptance;
-        delete newAccount.capabilities.card_issuing;
-        delete newAccount.capabilities.us_bank_account_ach_payments;
+        delete newAccount.capabilities; //.card_issuing;
+        //delete newAccount.capabilities.us_bank_account_ach_payments;
         delete newAccount.settings.card_issuing;
       }
       //accountResult = await stripe.createToken("account", newAccount);
