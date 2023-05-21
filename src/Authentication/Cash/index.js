@@ -687,6 +687,7 @@ class Cash extends React.Component {
         <PayNow
           hide={!this.state.openPaymentSecure}
           amount={2.99}
+          setAmount={() => {}}
           submit={async () => {
             const { openPaymentSecure: trust } = this.state;
             const { address: addr, first, last } = user;
