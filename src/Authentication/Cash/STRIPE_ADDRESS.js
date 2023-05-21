@@ -28,6 +28,11 @@ export default class STRIPE_ADDRESS extends React.Component {
       user_agent: parser.getUA()
     };
   }
+  componentDidUpdate = (prevProps) => {
+    if (this.props.stripe !== prevProps.stripe) {
+      window.stripe = this.props.stripe;
+    }
+  };
   render() {
     const { noAccountYetArray } = this.props;
     //https://plaid.com/docs/link/web/

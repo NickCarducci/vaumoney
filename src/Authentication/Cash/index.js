@@ -84,13 +84,14 @@ class Cash extends React.Component {
       lastPayoutType: "send cash"
       //business_type: "company", //bank_account_type, retail
     };
+    this.stripeemailaddress = React.createRef();
   }
   componentDidUpdate = async (prevProps) => {
     if (
       this.props.pathname !== prevProps.pathname ||
-      this.state.stripe !== this.state.lastStripe
+      window.stripe !== this.state.stripe
     ) {
-      this.setState({ lastStripe: this.state.stripe });
+      this.setState({ stripe: window.stripe });
       this.findURL();
     }
   };
@@ -664,6 +665,7 @@ class Cash extends React.Component {
           stripePromise={this.props.stripePromise}
           ref={{
             current: {
+              stripeemailaddress: this.stripeemailaddress,
               FIREBASE_MULTI: this.props.FIREBASE_MULTI
             }
           }}
@@ -855,6 +857,9 @@ class Cash extends React.Component {
               if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
                 const payments = true;
                 purchase(trust, payments);
+
+                if (!this.state.stripe)
+                  return this.stripeemailaddress.current.click();
               }
               /*if (!addr)
           //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
