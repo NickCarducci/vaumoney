@@ -35,8 +35,8 @@ class MicroVerify extends React.Component {
       user[`stripe${filler + shorter(selectThisOne)}Id`] &&
       !linksure(selectThisOne) && (
         <div>
-          {user[`customer${filler + shorter(selectThisOne)}Id`] &&
-            user[`cardholder${filler + shorter(selectThisOne)}Id`] && (
+          {user[`customer${shorter(selectThisOne)}Id`] &&
+            user[`cardholder${shorter(selectThisOne)}Id`] && (
               <div>
                 <h2
                   style={{

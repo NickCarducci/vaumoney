@@ -721,7 +721,7 @@ class Cash extends React.Component {
               }, {});
 
             var edit = {
-              authorId: this.props.auth.uid,
+              //authorId: this.props.auth.uid,
               mcc: trust.mcc,
               last,
               email: this.props.auth.email,
@@ -744,7 +744,8 @@ class Cash extends React.Component {
           edit
         ).then(() => {*/
             var cardholder = {
-              authorId: this.props.auth.uid,
+              //cardholderId:user[`cardholderId${shorter(trust.mcc)}Id`],
+              //authorId: this.props.auth.uid,
               mcc: trust.mcc,
               name: first + " " + last,
               email: this.props.auth.email,
@@ -913,7 +914,7 @@ class Cash extends React.Component {
                       .catch((e) => standardCatch(e));
                   });
             };
-            var bypass = true;
+            var bypass = false;
             if (bypass)
               return noissuing(
                 {
@@ -1014,8 +1015,7 @@ class Cash extends React.Component {
                 : "black";
             const filler = custom ? "custom" : "";
             //const issuing = x.capabilities && x.capabilities.card_issuing;
-            const issuing =
-              user && user[`cardholder${filler + shorter(x.mcc)}Id`];
+            const issuing = user && user[`cardholder${shorter(x.mcc)}Id`];
             return (x.mcc === "8398" ||
               (user && user[`stripe${filler}83Id`] && x.mcc === "7011") ||
               (user &&
@@ -1048,7 +1048,7 @@ class Cash extends React.Component {
                     (!tru || this.state.requestBuyer === x.mcc
                       ? "dotted "
                       : "solid ") +
-                    (user && user[`customer${filler + shorter(x.mcc)}Id`]
+                    (user && user[`customer${shorter(x.mcc)}Id`]
                       ? "black"
                       : color)
                 }}

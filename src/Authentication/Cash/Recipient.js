@@ -60,72 +60,77 @@ export default class Recipient extends React.Component {
       user[`stripecustom${this.props.shorter(this.props.selectThisOne)}Id`];
     const filler = custom ? "custom" : "";
     return (
-      <div
-        key={recipient.username}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%"
-        }}
-      >
+      (custom ||
+        (user &&
+          user[`stripe${this.props.shorter(this.props.selectThisOne)}Id`])) && (
         <div
+          key={recipient.username}
           style={{
             display: "flex",
-            position: "relative",
-            backgroundColor: "rgb(25,35,25)",
-            borderBottom: "1px white solid",
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            padding: "10px 0px"
+            flexDirection: "column",
+            width: "100%"
           }}
         >
           <div
             style={{
-              cursor: "pointer",
-              textDecoration: already ? "underline" : "none"
-            }}
-            onClick={() => {
-              const answer =
-                already ||
-                window.confirm(
-                  `Send money to ${recipient.username}` +
-                    (already ? "." : "?") +
-                    recipient.id
-                );
-              //console.log(already);
-              if (answer)
-                this.props.setEmail({
-                  chosenRecipient: already ? null : recipient
-                });
+              display: "flex",
+              position: "relative",
+              backgroundColor: "rgb(25,35,25)",
+              borderBottom: "1px white solid",
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              padding: "10px 0px"
             }}
           >
-            {recipient.username}
+            <div
+              style={{
+                cursor: "pointer",
+                textDecoration: already ? "underline" : "none"
+              }}
+              onClick={() => {
+                const answer =
+                  already ||
+                  window.confirm(
+                    `Send money to ${recipient.username}` +
+                      (already ? "." : "?") +
+                      recipient.id
+                  );
+                //console.log(already);
+                if (answer)
+                  this.props.setEmail({
+                    chosenRecipient: already ? null : recipient
+                  });
+              }}
+            >
+              {recipient.username}
+            </div>
           </div>
-        </div>
 
-        <MicroVerify
-          user={user}
-          linksure={this.props.linksure}
-          shorter={this.props.shorter}
-          show={
-            user &&
-            user[
-              `stripe${filler + this.props.shorter(this.state.selectThisOne)}Id`
-            ]
-          }
-          selectThisOne={this.state.selectThisOne}
-          stripePromise={stripePromise}
-          list={this.props.list}
-          setEmail={this.props.setEmail}
-          chosenRecipient={this.props.chosenRecipient}
-          payoutType={this.props.payoutType}
-        />
-        {
-          true
-            ? null
-            : null /*user.banks &&
+          <MicroVerify
+            user={user}
+            linksure={this.props.linksure}
+            shorter={this.props.shorter}
+            show={
+              user &&
+              user[
+                `stripe${
+                  filler + this.props.shorter(this.state.selectThisOne)
+                }Id`
+              ]
+            }
+            selectThisOne={this.state.selectThisOne}
+            stripePromise={stripePromise}
+            list={this.props.list}
+            setEmail={this.props.setEmail}
+            chosenRecipient={this.props.chosenRecipient}
+            payoutType={this.props.payoutType}
+          />
+          {
+            true
+              ? null
+              : null /*user.banks &&
           user.banks.length > 0 &&
           !this.state.newBank ? (
           <div style={{ display: "block" }}>
@@ -217,7 +222,7 @@ export default class Recipient extends React.Component {
                       the customer a secure, one-time code to their phone to authenticate. If the 
                       customer successfully authenticates, Stripe displays their 
                       Link-saved addresses and payment methods automatically for them to use.*/
-          /*<LinkAuthenticationElement
+            /*<LinkAuthenticationElement
                       // Optional prop for prefilling customer information
                           options={{
                             defaultValues: {
@@ -228,8 +233,9 @@ export default class Recipient extends React.Component {
                         )}
           </div>
                         )*/
-        }
-      </div>
+          }
+        </div>
+      )
     );
   }
 }
