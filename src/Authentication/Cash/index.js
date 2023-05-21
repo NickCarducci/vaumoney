@@ -8,7 +8,8 @@ import {
   increment,
   setDoc,
   updateDoc,
-  deleteField
+  deleteField,
+  FieldValue
 } from "firebase/firestore";
 import { specialFormatting, standardCatch } from "../FIREBASE_SUDO";
 import Email from "./Email";
@@ -685,254 +686,325 @@ class Cash extends React.Component {
             &times;
           </div>
         </div>
-        <PayNow
-          payoutType={this.state.payoutType}
-          setPayoutType={(e) => this.setState({ payoutType: e })}
-          setPaymentItems={(e) => this.setState({ paymentItems: e })}
-          paymentItems={this.state.paymentItems}
-          hide={!this.state.openPaymentSecure}
-          amount={2.99}
-          setAmount={() => {}}
-          submit={async () => {
-            const { openPaymentSecure: trust } = this.state;
-            const { address: addr, first, last } = user;
-            if (
-              user[`stripecustom${shorter(trust.mcc)}Id`] &&
-              user[`stripecustom${shorter(trust.mcc)}Link`]
-            )
-              return console.log("must authorize stripecustom"); //open to yet address
+        {user && user[`cardholder${shorter(this.state.selectThisOne)}Id`] ? (
+          //" Don't delete customers"
+          <div>
+            <div
+              onClick={async () => {
+                const answer = window.confirm(
+                  "Are you sure? All outbound card payments will be stopped."
+                );
+                if (answer)
+                  await fetch("https://vault-co.in/delete", {
+                    method: "POST",
+                    headers: {
+                      "Access-Control-Request-Method": "POST",
+                      "Access-Control-Request-Headers": [
+                        "Origin",
+                        "Content-Type"
+                      ], //allow referer
+                      "Content-Type": "Application/JSON"
+                    },
+                    body: JSON.stringify({
+                      deleteThese: [
+                        user[`cardholder${shorter(this.state.selectThisOne)}Id`]
+                      ],
+                      unSubThese: [
+                        user[
+                          `subscription${shorter(this.state.selectThisOne)}Id`
+                        ]
+                      ]
+                    })
+                  }) //stripe account, not plaid access token payout yet
+                    .then(async (res) => await res.json())
+                    .then(async (result) => {
+                      if (result.status) return console.log(result);
+                      if (result.error) return console.log(result);
+                      if (!result.data)
+                        return console.log("dev error (Cash)", result);
+                      console.log(result.data);
 
-            if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
-              const payments = true;
-              purchase(trust, payments);
-            }
-            /*if (!addr)
+                      await fetch("https://vault-co.in/unsub", {
+                        method: "POST",
+                        headers: {
+                          "Access-Control-Request-Method": "POST",
+                          "Access-Control-Request-Headers": [
+                            "Origin",
+                            "Content-Type"
+                          ], //allow referer
+                          "Content-Type": "Application/JSON"
+                        },
+                        body: JSON.stringify({
+                          deleteThese: [
+                            user[
+                              `subscription${shorter(
+                                this.state.selectThisOne
+                              )}Id`
+                            ]
+                          ],
+                          unSubThese: []
+                        })
+                      }) //stripe account, not plaid access token payout yet
+                        .then(async (res) => await res.json())
+                        .then(async (result) => {
+                          if (result.status) return console.log(result);
+                          if (result.error) return console.log(result);
+                          if (!result.data)
+                            return console.log("dev error (Cash)", result);
+                          console.log(result.data);
+                          updateDoc(
+                            doc(firestore, "userDatas", this.props.auth.uid),
+                            {
+                              [`cardholder${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField(),
+                              [`customer${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField(),
+                              [`subscription${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField()
+                            }
+                          );
+                        })
+                        .catch(standardCatch);
+                    })
+                    .catch(standardCatch);
+              }}
+            >
+              Cancel $2.99/mo subscription
+            </div>
+            <div
+              onClick={async () => {
+                await fetch("https://vault-co.in/issue", {
+                  method: "POST",
+                  headers: {
+                    "Access-Control-Request-Method": "POST",
+                    "Access-Control-Request-Headers": [
+                      "Origin",
+                      "Content-Type"
+                    ], //allow referer
+                    "Content-Type": "Application/JSON"
+                  },
+                  body: JSON.stringify({
+                    cardholderId:
+                      user[`cardholder${shorter(this.state.selectThisOne)}Id`],
+                    type: "physical"
+                  })
+                }) //stripe account, not plaid access token payout yet
+                  .then(async (res) => await res.json())
+                  .then(async (result) => {
+                    if (result.status) return console.log(result);
+                    if (result.error) return console.log(result);
+                    if (!result.cardId)
+                      return console.log("dev error (Cash)", result);
+                    console.log(result.cardId);
+                  })
+                  .catch(standardCatch);
+              }}
+            >
+              Issue card
+            </div>
+          </div>
+        ) : (
+          <PayNow
+            payoutType={this.state.payoutType}
+            setPayoutType={(e) => this.setState({ payoutType: e })}
+            setPaymentItems={(e) => this.setState({ paymentItems: e })}
+            paymentItems={this.state.paymentItems}
+            hide={!this.state.openPaymentSecure}
+            amount={2.99}
+            setAmount={() => {}}
+            submit={async () => {
+              const { openPaymentSecure: trust } = this.state;
+              const { address: addr, first, last } = user;
+              if (
+                user[`stripecustom${shorter(trust.mcc)}Id`] &&
+                user[`stripecustom${shorter(trust.mcc)}Link`]
+              )
+                return console.log("must authorize stripecustom"); //open to yet address
+
+              if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
+                const payments = true;
+                purchase(trust, payments);
+              }
+              /*if (!addr)
           //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
           return this.setState({ openFormSecure: true });*/
 
-            const address = Object.keys(addr)
-              .map((x) => {
-                //console.log(remaining, event.value.address[next]);
-                return addr[x]
-                  ? {
-                      [x]: addr[x]
-                    }
-                  : "";
-              })
-              .filter((x) => x !== "")
-              .reduce(function (result, current) {
-                return Object.assign(result, current);
-              }, {});
+              const address = Object.keys(addr)
+                .map((x) => {
+                  //console.log(remaining, event.value.address[next]);
+                  return addr[x]
+                    ? {
+                        [x]: addr[x]
+                      }
+                    : "";
+                })
+                .filter((x) => x !== "")
+                .reduce(function (result, current) {
+                  return Object.assign(result, current);
+                }, {});
 
-            var edit = {
-              //authorId: this.props.auth.uid,
-              mcc: trust.mcc,
-              last,
-              email: this.props.auth.email,
-              //address: auth.address,
-              name: first + " " + last,
-              phone: this.props.auth.phoneNumber,
-              shipping: {
-                address,
+              var edit = {
+                //authorId: this.props.auth.uid,
+                mcc: trust.mcc,
+                last,
+                email: this.props.auth.email,
+                //address: auth.address,
                 name: first + " " + last,
-                phone: this.props.auth.phoneNumber
-              },
-              address,
-              description: trust.description
-            };
-            /*setDoc(
+                phone: this.props.auth.phoneNumber,
+                shipping: {
+                  address,
+                  name: first + " " + last,
+                  phone: this.props.auth.phoneNumber
+                },
+                address,
+                description: trust.description
+              };
+              /*setDoc(
           doc(
             collection(firestore, "customers"),
             trust.mcc + this.props.auth.uid
           ),
           edit
         ).then(() => {*/
-            var cardholder = {
-              //cardholderId:user[`cardholderId${shorter(trust.mcc)}Id`],
-              //authorId: this.props.auth.uid,
-              mcc: trust.mcc,
-              name: first + " " + last,
-              email: this.props.auth.email,
-              phone_number: this.props.auth.phoneNumber,
-              status: "active",
-              type: "individual",
-              individual: {
-                first_name: first,
-                last_name: last
-              },
-              billing: {
-                address
-              }
-            };
-            /*setDoc(
+              var cardholder = {
+                //cardholderId:user[`cardholderId${shorter(trust.mcc)}Id`],
+                //authorId: this.props.auth.uid,
+                mcc: trust.mcc,
+                name: first + " " + last,
+                email: this.props.auth.email,
+                phone_number: this.props.auth.phoneNumber,
+                status: "active",
+                type: "individual",
+                individual: {
+                  first_name: first,
+                  last_name: last
+                },
+                billing: {
+                  address
+                }
+              };
+              /*setDoc(
             doc(
               collection(firestore, "cardholders"),
               trust.mcc + this.props.auth.uid
             ),
             cardholder
           ).then(async (docRef) => {*/
-            //no need to get ref.id
-            //neither for prefix count
-            //nor customer + cardholder
-            //try and userDatas update
-            const merchantSurnamePrefix =
-              user.address.country +
-              String(this.state.selectThisOne).substring(0, 2) +
-              edit.last.substring(0, 3).toLocaleUpperCase();
-            const totalMerchantSurnames = await getDoc(
-              doc(
-                collection(firestore, "merchantSurnames"),
-                merchantSurnamePrefix
+              //no need to get ref.id
+              //neither for prefix count
+              //nor customer + cardholder
+              //try and userDatas update
+              const merchantSurnamePrefix =
+                user.address.country +
+                String(this.state.selectThisOne).substring(0, 2) +
+                edit.last.substring(0, 3).toLocaleUpperCase();
+              const totalMerchantSurnames = await getDoc(
+                doc(
+                  collection(firestore, "merchantSurnames"),
+                  merchantSurnamePrefix
+                )
               )
-            )
-              .then((dx) => {
-                (dx.exists() ? updateDoc : setDoc)(
-                  doc(
-                    collection(firestore, "merchantSurnames"),
-                    merchantSurnamePrefix
-                  ),
-                  { count: increment(1) }
-                );
-                return { ...dx.data(), id: dx.id }.count + 1;
-              })
-              .catch((err) => {
-                console.log(
-                  "surname update,set, or get failure: ",
-                  err.message
-                );
-                return err;
-              });
-            if (
-              !totalMerchantSurnames ||
-              totalMerchantSurnames.constructor !== Number
-            )
-              return window.alert(
-                "dev error (no document can be made): ",
-                totalMerchantSurnames
-              );
-            const invoice_prefix =
-              merchantSurnamePrefix + totalMerchantSurnames;
-            delete edit.authorId;
-            delete edit.mcc;
-            delete edit.last;
-
-            delete cardholder.authorId;
-            delete cardholder.mcc;
-
-            const { paymentItems } = this.state;
-            const expiry = paymentItems.expiry.split("/");
-            const addressToPay = Object.keys(paymentItems.billing_details)
-              .map((x) => {
-                //console.log(remaining, event.value.address[next]);
-                return paymentItems.billing_details[x]
-                  ? {
-                      [x]: paymentItems.billing_details[x]
-                    }
-                  : "";
-              })
-              .filter((x) => x !== "")
-              .reduce(function (result, current) {
-                return Object.assign(result, current);
-              }, {});
-            const personal = {
-              address: addressToPay,
-              phone: this.props.auth.phoneNumber,
-              name:
-                paymentItems.first + paymentItems.middle + paymentItems.last,
-              email: this.props.auth.email
-            };
-            const bankcard =
-              this.state.payoutType !== "bank"
-                ? {
-                    primary: paymentItems.number,
-                    exp_month: expiry[0],
-                    exp_year: expiry[1],
-                    cvc: paymentItems.cvc,
-                    //cardElement
-                    ...personal
-                  }
-                : {
-                    //country: user.address.country,
-                    //currency: "USD",
-                    company: paymentItems.account_holder_type,
-                    account: paymentItems.account_number,
-                    //account_type: this.state.account_type,
-                    routing: paymentItems.routing_number,
-                    savings: paymentItems.savings,
-
-                    ...personal
-                  };
-            const body = {
-              type:
-                this.state.payoutType === "bank" ? "us_bank_account" : "card",
-              customer: {
-                ...edit,
-                invoice_prefix
-                //type: "physical"
-              },
-              cardholder,
-              ...bankcard
-            };
-            //return console.log(body)
-            const issuing = async (cardholder) => {
-              return await fetch("https://vault-co.in/cardholder", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "Application/JSON",
-                  "Access-Control-Request-Method": "POST",
-                  "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
-                },
-                body: JSON.stringify(cardholder)
-              })
-                .then(async (res) => await res.json())
-                .then((res) => {
-                  if (!res.customer)
-                    return console.log(
-                      "no customerId from vault-co.in/customer",
-                      res
-                    );
-                  getDoc(
-                    doc(collection(firestore, "userDatas"), this.props.auth.uid)
-                  )
-                    .then((d) => {
-                      const digits = String(trust.mcc).substring(0, 2);
-                      //kv.invoice_prefix = store.invoice_prefix;
-                      (d.exists() ? updateDoc : setDoc)(
-                        doc(
-                          collection(firestore, "userDatas"),
-                          this.props.auth.uid
-                        ),
-                        {
-                          [`cardholder${digits}Id`]: res.customer.id
-                        }
-                      )
-                        .then(() => {})
-                        .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
-                    })
-                    .catch((e) => standardCatch(e));
+                .then((dx) => {
+                  (dx.exists() ? updateDoc : setDoc)(
+                    doc(
+                      collection(firestore, "merchantSurnames"),
+                      merchantSurnamePrefix
+                    ),
+                    { count: increment(1) }
+                  );
+                  return { ...dx.data(), id: dx.id }.count + 1;
+                })
+                .catch((err) => {
+                  console.log(
+                    "surname update,set, or get failure: ",
+                    err.message
+                  );
+                  return err;
                 });
-            };
-
-            if (user[`customer${shorter(trust.mcc)}Id`])
-              return issuing(cardholder);
-            const noissuing = async (res, customer) => {
-              console.log(
-                "no customerId+cardholerId from vault-co.in/buy",
-                res
-              );
-
               if (
-                res.error.raw.message ===
-                "Issuing is only available in testmode for this account."
+                !totalMerchantSurnames ||
+                totalMerchantSurnames.constructor !== Number
               )
-                return await fetch("https://vault-co.in/customer", {
+                return window.alert(
+                  "dev error (no document can be made): ",
+                  totalMerchantSurnames
+                );
+              const invoice_prefix =
+                merchantSurnamePrefix + totalMerchantSurnames;
+              delete edit.authorId;
+              delete edit.mcc;
+              delete edit.last;
+
+              delete cardholder.authorId;
+              delete cardholder.mcc;
+
+              const { paymentItems } = this.state;
+              const expiry = paymentItems.expiry.split("/");
+              const addressToPay = Object.keys(paymentItems.billing_details)
+                .map((x) => {
+                  //console.log(remaining, event.value.address[next]);
+                  return paymentItems.billing_details[x]
+                    ? {
+                        [x]: paymentItems.billing_details[x]
+                      }
+                    : "";
+                })
+                .filter((x) => x !== "")
+                .reduce(function (result, current) {
+                  return Object.assign(result, current);
+                }, {});
+              const personal = {
+                address: addressToPay,
+                phone: this.props.auth.phoneNumber,
+                name:
+                  paymentItems.first + paymentItems.middle + paymentItems.last,
+                email: this.props.auth.email
+              };
+              const bankcard =
+                this.state.payoutType !== "bank"
+                  ? {
+                      primary: paymentItems.number,
+                      exp_month: expiry[0],
+                      exp_year: expiry[1],
+                      cvc: paymentItems.cvc,
+                      //cardElement
+                      ...personal
+                    }
+                  : {
+                      //country: user.address.country,
+                      //currency: "USD",
+                      company: paymentItems.account_holder_type,
+                      account: paymentItems.account_number,
+                      //account_type: this.state.account_type,
+                      routing: paymentItems.routing_number,
+                      savings: paymentItems.savings,
+
+                      ...personal
+                    };
+              const body = {
+                type:
+                  this.state.payoutType === "bank" ? "us_bank_account" : "card",
+                customer: {
+                  ...edit,
+                  invoice_prefix
+                  //type: "physical"
+                },
+                cardholder,
+                ...bankcard
+              };
+              //return console.log(body)
+              const issuing = async (cardholder) => {
+                return await fetch("https://vault-co.in/cardholder", {
                   method: "POST",
                   headers: {
                     "Content-Type": "Application/JSON",
                     "Access-Control-Request-Method": "POST",
                     "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
                   },
-                  body: JSON.stringify(customer)
+                  body: JSON.stringify(cardholder)
                 })
                   .then(async (res) => await res.json())
                   .then((res) => {
@@ -956,7 +1028,7 @@ class Cash extends React.Component {
                             this.props.auth.uid
                           ),
                           {
-                            [`customer${digits}Id`]: res.customer.id
+                            [`cardholder${digits}Id`]: res.customer.id
                           }
                         )
                           .then(() => {})
@@ -964,59 +1036,117 @@ class Cash extends React.Component {
                       })
                       .catch((e) => standardCatch(e));
                   });
-            };
-            var bypass = false;
-            if (bypass)
-              return noissuing(
-                {
-                  error: {
-                    raw: {
-                      message:
-                        "Issuing is only available in testmode for this account."
-                    }
-                  }
-                },
-                body.customer
-              );
-            return await fetch("https://vault-co.in/buy", {
-              method: "POST",
-              headers: {
-                "Content-Type": "Application/JSON",
-                "Access-Control-Request-Method": "POST",
-                "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
-              },
-              body: JSON.stringify(body)
-            })
-              .then(async (res) => await res.json())
-              .then(async (res) => {
-                if (!res.customer || !res.cardholder) {
-                  return noissuing(res, body.customer);
-                }
-                getDoc(
-                  doc(collection(firestore, "userDatas"), this.props.auth.uid)
+              };
+
+              if (user[`customer${shorter(trust.mcc)}Id`])
+                return issuing(cardholder);
+              const noissuing = async (res, customer) => {
+                console.log(
+                  "no customerId+cardholerId from vault-co.in/buy",
+                  res
+                );
+
+                if (
+                  res.error.raw.message ===
+                  "Issuing is only available in testmode for this account."
                 )
-                  .then((d) => {
-                    const digits = String(trust.mcc).substring(0, 2);
-                    //kv.invoice_prefix = store.invoice_prefix;
-                    (d.exists() ? updateDoc : setDoc)(
-                      doc(
-                        collection(firestore, "userDatas"),
-                        this.props.auth.uid
-                      ),
-                      {
-                        [`customer${digits}Id`]: res.customer.id,
-                        [`cardholder${digits}Id`]: res.cardholder.id
-                      }
-                    )
-                      .then(() => {})
-                      .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                  return await fetch("https://vault-co.in/customer", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "Application/JSON",
+                      "Access-Control-Request-Method": "POST",
+                      "Access-Control-Request-Headers": [
+                        "Origin",
+                        "Content-Type"
+                      ] //allow referer
+                    },
+                    body: JSON.stringify(customer)
                   })
-                  .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
-              });
-            // { keyvalue },"firestore store id (then callback)"
-            //plaidLink payouts account.details_submitted;
-          }}
-        />
+                    .then(async (res) => await res.json())
+                    .then((res) => {
+                      if (!res.customer)
+                        return console.log(
+                          "no customerId from vault-co.in/customer",
+                          res
+                        );
+                      getDoc(
+                        doc(
+                          collection(firestore, "userDatas"),
+                          this.props.auth.uid
+                        )
+                      )
+                        .then((d) => {
+                          const digits = String(trust.mcc).substring(0, 2);
+                          //kv.invoice_prefix = store.invoice_prefix;
+                          (d.exists() ? updateDoc : setDoc)(
+                            doc(
+                              collection(firestore, "userDatas"),
+                              this.props.auth.uid
+                            ),
+                            {
+                              [`customer${digits}Id`]: res.customer.id
+                            }
+                          )
+                            .then(() => {})
+                            .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                        })
+                        .catch((e) => standardCatch(e));
+                    });
+              };
+              var bypass = false;
+              if (bypass)
+                return noissuing(
+                  {
+                    error: {
+                      raw: {
+                        message:
+                          "Issuing is only available in testmode for this account."
+                      }
+                    }
+                  },
+                  body.customer
+                );
+              return await fetch("https://vault-co.in/buy", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "Application/JSON",
+                  "Access-Control-Request-Method": "POST",
+                  "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
+                },
+                body: JSON.stringify(body)
+              })
+                .then(async (res) => await res.json())
+                .then(async (res) => {
+                  if (!res.customer || !res.cardholder) {
+                    return noissuing(res, body.customer);
+                  }
+                  getDoc(
+                    doc(collection(firestore, "userDatas"), this.props.auth.uid)
+                  )
+                    .then((d) => {
+                      const digits = String(trust.mcc).substring(0, 2);
+                      //kv.invoice_prefix = store.invoice_prefix;
+                      (d.exists() ? updateDoc : setDoc)(
+                        doc(
+                          collection(firestore, "userDatas"),
+                          this.props.auth.uid
+                        ),
+                        {
+                          [`customer${digits}Id`]: res.customer.id,
+                          [`cardholder${digits}Id`]: res.cardholder.id,
+                          [`subscription${digits}Id`]: res.subscription.id
+                        }
+                      )
+                        .then(() => {})
+                        .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                    })
+                    .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                });
+              // { keyvalue },"firestore store id (then callback)"
+              //plaidLink payouts account.details_submitted;
+            }}
+          />
+        )}
 
         {this.state.selectThisOne && linksure(this.state.selectThisOne) && (
           <a href={linksure(this.state.selectThisOne)}>Reset link</a>
