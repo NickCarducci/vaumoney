@@ -595,11 +595,17 @@ class Email extends React.Component {
               "8099 Patient: out-of-pocket health care providers",
               "8299 Student: school tuition",
               "8398 Charity: foundation"
-            ].map((x, i) => (
-              <option id={x.substring(0, 4)} key={x + i}>
-                {x.split(": ")[1]}
-              </option>
-            ))}
+            ].map(
+              (x, i) =>
+                ((viewUser[`stripecustom${shorter(x.substring(0, 4))}Id`] &&
+                  !viewUser[`stripecustom${shorter(x.substring(0, 4))}Link`]) ||
+                  (viewUser[`stripe${shorter(x.substring(0, 4))}Id`] &&
+                    !viewUser[`stripe${shorter(x.substring(0, 4))}Link`])) && (
+                  <option id={x.substring(0, 4)} key={x + i}>
+                    {x.split(": ")[1]}
+                  </option>
+                )
+            )}
           </select>
           <br />
           <br />
