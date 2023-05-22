@@ -1020,7 +1020,7 @@ class FIREBASE_APP extends React.Component {
                       </a>
                     </span>
                     <br />
-                    $2-8{space}
+                    $3{space}
                     <a
                       style={{ color: "white" }}
                       href="https://stripe.com/docs/api/tokens"
@@ -1049,7 +1049,15 @@ class FIREBASE_APP extends React.Component {
                     Fair Haven, NJ
                   </h4>
                   <h2 style={{ fontSize: "22px" }}>
-                    With Vaumoney, you can spend tax-free from these accounts:
+                    Business customers can load issuable cards or save and
+                    payout either medical, student, charity, or home expenses as
+                    if they paid them this year. We advise you on how to amend
+                    your tax returns if you spend real property development
+                    management operations on either direct school, out-of-pocket
+                    health care, or other purposes.{space}
+                    <i>
+                      With Vaumoney, you can spend tax-free from these accounts:
+                    </i>
                   </h2>
                   <div style={{ fontSize: "16px", color: "violet" }}>
                     7011 Home: real property development management operations,
