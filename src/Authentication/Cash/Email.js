@@ -316,6 +316,7 @@ class Email extends React.Component {
       : this.props.user
       ? this.props.user
       : { username: "waiting" };
+    console.log("selectThisOne", this.state.selectThisOne);
     return (
       <div>
         <div
@@ -587,21 +588,25 @@ class Email extends React.Component {
           <br />
           <select
             onChange={(e) => {
-              this.setState({ selectThisOne: e.target.id });
+              this.setState({ selectThisOne: e.target.value });
             }}
           >
             {[
+              "",
               "7011 Home: real property development management operations",
               "8099 Patient: out-of-pocket health care providers",
               "8299 Student: school tuition",
               "8398 Charity: foundation"
             ].map(
               (x, i) =>
-                ((viewUser[`stripecustom${shorter(x.substring(0, 4))}Id`] &&
-                  !viewUser[`stripecustom${shorter(x.substring(0, 4))}Link`]) ||
+                (x === "" ||
+                  (viewUser[`stripecustom${shorter(x.substring(0, 4))}Id`] &&
+                    !viewUser[
+                      `stripecustom${shorter(x.substring(0, 4))}Link`
+                    ]) ||
                   (viewUser[`stripe${shorter(x.substring(0, 4))}Id`] &&
                     !viewUser[`stripe${shorter(x.substring(0, 4))}Link`])) && (
-                  <option id={x.substring(0, 4)} key={x + i}>
+                  <option value={x.substring(0, 4)} key={x + i}>
                     {x.split(": ")[1]}
                   </option>
                 )
@@ -610,8 +615,14 @@ class Email extends React.Component {
           <br />
           <br />
           {viewUser.username !== "waiting" &&
-            viewUser[`stripe${shorter(this.state.selectThisOne)}Id`] &&
-            !viewUser[`stripe${shorter(this.state.selectThisOne)}Link`] && (
+            ((viewUser[`stripecustom${shorter(this.state.selectThisOne)}Id`] &&
+              !viewUser[
+                `stripecustom${shorter(this.state.selectThisOne)}Link`
+              ]) ||
+              (viewUser[`stripe${shorter(this.state.selectThisOne)}Id`] &&
+                !viewUser[
+                  `stripe${shorter(this.state.selectThisOne)}Link`
+                ])) && (
               <PayNow
                 payoutType={this.state.payoutType}
                 setPayoutType={(e) => this.setState({ payoutType: e })}
