@@ -304,7 +304,7 @@ class Email extends React.Component {
                 entry,
                 ["line1", "line2", "postal_code"].includes(e.target.id)
               )
-            : codify(e, entry)
+            : codify(e, entry).toUpperCase()
         }
       });
     };
