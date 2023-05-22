@@ -316,7 +316,7 @@ class Email extends React.Component {
       : this.props.user
       ? this.props.user
       : { username: "waiting" };
-    console.log("selectThisOne", this.state.selectThisOne);
+    //console.log("selectThisOne", this.state.selectThisOne);
     return (
       <div>
         <div
