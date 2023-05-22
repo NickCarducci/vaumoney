@@ -311,12 +311,11 @@ class Email extends React.Component {
     const custom =
       user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
     const filler = custom ? "custom" : "";
-    const username = (this.state.viewUser
+    const viewUser = this.state.viewUser
       ? this.state.viewUser
       : this.props.user
       ? this.props.user
-      : { username: "waiting" }
-    ).username;
+      : { username: "waiting" };
     return (
       <div>
         <div
@@ -574,7 +573,7 @@ class Email extends React.Component {
             display: this.state.openProfiles ? "block" : "none"
           }}
         >
-          {username === "waiting" ? (
+          {viewUser.username === "waiting" ? (
             <S404
               scrolling={this.props.scrolling}
               lastPath={this.props.lastPathname}
@@ -583,7 +582,7 @@ class Email extends React.Component {
               auth={this.props.auth}
             />
           ) : (
-            username
+            viewUser.username
           )}
           <br />
           <select
@@ -604,106 +603,108 @@ class Email extends React.Component {
           </select>
           <br />
           <br />
-          {username !== "waiting" && (
-            <PayNow
-              payoutType={this.state.payoutType}
-              setPayoutType={(e) => this.setState({ payoutType: e })}
-              setPaymentItems={(e) => this.setState({ paymentItems: e })}
-              paymentItems={this.state.paymentItems}
-              amount={this.state.amount}
-              setAmount={(e) => this.setState(e)}
-              submit={() => {
-                var answer = window.confirm(
-                  "Pay " +
-                    this.state.viewUser.username +
-                    " " +
-                    this.state.amount +
-                    "?"
-                );
-                const paynow = async () => {
-                  const { paymentItems } = this.state;
-                  const expiry = paymentItems.expiry.split("/");
-                  const address = Object.keys(paymentItems.billing_details)
-                    .map((x) => {
-                      //console.log(remaining, event.value.address[next]);
-                      return paymentItems.billing_details[x]
+          {viewUser.username !== "waiting" &&
+            viewUser[`stripe${shorter(this.state.selectThisOne)}Id`] &&
+            !viewUser[`stripe${shorter(this.state.selectThisOne)}Link`] && (
+              <PayNow
+                payoutType={this.state.payoutType}
+                setPayoutType={(e) => this.setState({ payoutType: e })}
+                setPaymentItems={(e) => this.setState({ paymentItems: e })}
+                paymentItems={this.state.paymentItems}
+                amount={this.state.amount}
+                setAmount={(e) => this.setState(e)}
+                submit={() => {
+                  var answer = window.confirm(
+                    "Pay " +
+                      this.state.viewUser.username +
+                      " " +
+                      this.state.amount +
+                      "?"
+                  );
+                  const paynow = async () => {
+                    const { paymentItems } = this.state;
+                    const expiry = paymentItems.expiry.split("/");
+                    const address = Object.keys(paymentItems.billing_details)
+                      .map((x) => {
+                        //console.log(remaining, event.value.address[next]);
+                        return paymentItems.billing_details[x]
+                          ? {
+                              [x]: paymentItems.billing_details[x]
+                            }
+                          : "";
+                      })
+                      .filter((x) => x !== "")
+                      .reduce(function (result, current) {
+                        return Object.assign(result, current);
+                      }, {});
+                    const personal = {
+                      address,
+                      phone: this.props.auth.phoneNumber,
+                      name:
+                        paymentItems.first +
+                        paymentItems.middle +
+                        paymentItems.last,
+                      email: this.props.auth.email
+                    };
+                    const bankcard =
+                      this.state.payoutType !== "bank"
                         ? {
-                            [x]: paymentItems.billing_details[x]
+                            primary: paymentItems.number,
+                            exp_month: expiry[0],
+                            exp_year: expiry[1],
+                            cvc: paymentItems.cvc,
+                            //cardElement
+                            ...personal
                           }
-                        : "";
-                    })
-                    .filter((x) => x !== "")
-                    .reduce(function (result, current) {
-                      return Object.assign(result, current);
-                    }, {});
-                  const personal = {
-                    address,
-                    phone: this.props.auth.phoneNumber,
-                    name:
-                      paymentItems.first +
-                      paymentItems.middle +
-                      paymentItems.last,
-                    email: this.props.auth.email
+                        : {
+                            //country: user.address.country,
+                            //currency: "USD",
+                            company: paymentItems.account_holder_type,
+                            account: paymentItems.account_number,
+                            //account_type: this.state.account_type,
+                            routing: paymentItems.routing_number,
+                            savings: paymentItems.savings,
+
+                            ...personal
+                          };
+
+                    await fetch("https://vault-co.in/paynow", {
+                      method: "POST",
+                      headers: {
+                        "Access-Control-Request-Method": "POST",
+                        "Access-Control-Request-Headers": [
+                          "Origin",
+                          "Content-Type"
+                        ], //allow referer
+                        "Content-Type": "Application/JSON"
+                      },
+                      body: JSON.stringify({
+                        type:
+                          this.state.payoutType === "bank"
+                            ? "us_bank_account"
+                            : "card",
+                        //paymentMethod: x.id,
+                        //customerId: user[`customer${sht}Id`],
+                        //storeId: this.state.chosenRecipient[`stripe83Id`],
+                        currency: "usd",
+                        total: this.state.amount,
+                        ...bankcard
+                      })
+                    }) //stripe account, not plaid access token payout yet
+                      .then(async (res) => await res.json())
+                      .then(async (result) => {
+                        if (result.status) return console.log(result);
+                        if (result.error) return console.log(result);
+                        if (!result.data)
+                          return console.log("dev error (Cash)", result);
+                        console.log(result.data);
+                      })
+                      .catch(standardCatch);
                   };
-                  const bankcard =
-                    this.state.payoutType !== "bank"
-                      ? {
-                          primary: paymentItems.number,
-                          exp_month: expiry[0],
-                          exp_year: expiry[1],
-                          cvc: paymentItems.cvc,
-                          //cardElement
-                          ...personal
-                        }
-                      : {
-                          //country: user.address.country,
-                          //currency: "USD",
-                          company: paymentItems.account_holder_type,
-                          account: paymentItems.account_number,
-                          //account_type: this.state.account_type,
-                          routing: paymentItems.routing_number,
-                          savings: paymentItems.savings,
-
-                          ...personal
-                        };
-
-                  await fetch("https://vault-co.in/paynow", {
-                    method: "POST",
-                    headers: {
-                      "Access-Control-Request-Method": "POST",
-                      "Access-Control-Request-Headers": [
-                        "Origin",
-                        "Content-Type"
-                      ], //allow referer
-                      "Content-Type": "Application/JSON"
-                    },
-                    body: JSON.stringify({
-                      type:
-                        this.state.payoutType === "bank"
-                          ? "us_bank_account"
-                          : "card",
-                      //paymentMethod: x.id,
-                      //customerId: user[`customer${sht}Id`],
-                      //storeId: this.state.chosenRecipient[`stripe83Id`],
-                      currency: "usd",
-                      total: this.state.amount,
-                      ...bankcard
-                    })
-                  }) //stripe account, not plaid access token payout yet
-                    .then(async (res) => await res.json())
-                    .then(async (result) => {
-                      if (result.status) return console.log(result);
-                      if (result.error) return console.log(result);
-                      if (!result.data)
-                        return console.log("dev error (Cash)", result);
-                      console.log(result.data);
-                    })
-                    .catch(standardCatch);
-                };
-                answer && paynow();
-              }}
-            />
-          )}
+                  answer && paynow();
+                }}
+              />
+            )}
           {/*<MicroVerify
                 user={this.state.user}
                 linksure={this.props.linksure}
