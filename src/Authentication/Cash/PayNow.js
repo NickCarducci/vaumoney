@@ -32,11 +32,13 @@ export default class PayNow extends React.Component {
   };
   render() {
     const textu = (e, name, exp) => {
-      const value = e.target.value;
+      //const zeroPad = (e) => (e.length < 2 ? 0 + e : e);
+      const value = e.target.value.replaceAll("/", "");
+      //const value = exp ? zeroPad(val) : val;
       this.setState({
-        [name]:
-          value +
-          (exp ? value.substring(0, 2) + "/" + value.substring(2, 4) : "")
+        [name]: exp
+          ? value.substring(0, 2) + "/" + value.substring(2, 4)
+          : value
       });
     };
     const inputStyle = {
