@@ -1,4 +1,5 @@
 import MuxPlayer from "@mux/mux-player-react";
+import S404 from ".././404.js";
 import FIREBASE_MULTI from "./FIREBASE_MULTI";
 import {
   collection,
@@ -33,6 +34,7 @@ import { countries } from "./countries";
 import { Operating, states } from "./utils";
 import Recipient from "./Recipient";
 import { shorter } from ".";
+import PayNow from "./PayNow";
 
 export const specialFormatting = (x, numbersOk) =>
   x
@@ -93,10 +95,38 @@ class Email extends React.Component {
         state: "",
         postal_code: "",
         country: "US"
-      }
+      },
+      viewUser: undefined
     };
     this.FIREBASE_EMAIL = React.createRef();
   }
+  componentDidMount = () => {
+    this.queryProfiles();
+  };
+  queryProfiles = () => {
+    const pathSegment = this.props.pathname.split("/")[1];
+    console.log("pathSegment", pathSegment);
+    onSnapshot(
+      query(
+        collection(firestore, "users"),
+        where("username", "==", pathSegment)
+      ),
+      (snapshot) => {
+        console.log("pathSegment docs", snapshot.docs.length);
+        this.setState({
+          openProfiles: true,
+          viewUser: snapshot.docs
+            .map((doc) => {
+              if (doc.exists()) {
+                return { ...doc.data(), id: doc.id };
+              } else return "";
+            })
+            .filter((x) => x !== "")[0]
+        });
+      },
+      standardCatch
+    );
+  };
   componentDidUpdate = async (prevProps) => {
     if (this.props.auth !== prevProps.auth) {
       this.setState({
@@ -130,13 +160,19 @@ class Email extends React.Component {
             JSON.stringify(this.props.address)
         );
       if (answer) {
+        const { user } = this.props;
+        const custom =
+          user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
+        const filler = custom ? "custom" : "";
+        const sht = this.props.selectThisOne
+          ? shorter(this.props.selectThisOne)
+          : "83";
+        const storeId = this.props.user[`stripe${filler + sht}Id`];
+        //if (!storeId) this.props.setCash({ selectThisOne: 8398 });
+        //return console.log("filler", storeId);
         updateDoc(doc(firestore, "userDatas", this.props.auth.uid), {
           address: this.props.address
         }).then(async () => {
-          const { user } = this.props;
-          const custom =
-            user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
-          const filler = custom ? "custom" : "";
           await fetch("https://vault-co.in/updateaddress", {
             method: "POST",
             headers: {
@@ -145,9 +181,7 @@ class Email extends React.Component {
               "Content-Type": "Application/JSON"
             },
             body: JSON.stringify({
-              storeId: this.props.user[
-                `stripe${filler + shorter(this.props.selectThisOne)}Id`
-              ],
+              storeId,
               personId: this.props.user[
                 `person${filler + shorter(this.props.selectThisOne)}Id`
               ]
@@ -163,6 +197,13 @@ class Email extends React.Component {
             .catch(standardCatch);
         });
       }
+    }
+    if (this.state.viewUser !== this.state.lastUser) {
+      this.state.viewUser &&
+        console.log("profile ", this.state.viewUser.username);
+      this.setState({
+        lastUser: this.state.viewUser
+      });
     }
   };
   list = async (bankcard, customerId) => {
@@ -270,6 +311,12 @@ class Email extends React.Component {
     const custom =
       user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
     const filler = custom ? "custom" : "";
+    const username = (this.state.viewUser
+      ? this.state.viewUser
+      : this.props.user
+      ? this.props.user
+      : { username: "waiting" }
+    ).username;
     return (
       <div>
         <div
@@ -292,14 +339,17 @@ class Email extends React.Component {
         >
           <div
             onClick={
-              this.state.openFormSecure
+              this.state.openProfiles && !["/"].includes(this.props.pathname)
+                ? () => this.props.navigate("/")
+                : this.state.openFormSecure
                 ? () => this.setState({ openFormSecure: false })
                 : this.state.revenueShow || this.state.expenseShow
                 ? () =>
                     this.setState({ revenueShow: false, expenseShow: false })
                 : this.state.userQuery.length > 0 && this.state.userQuery !== ""
                 ? () => this.setState({ userQuery: "" })
-                : () => this.setState({ openIssuers: !this.state.openIssuers }) //this.props.emulateRoot // this.props.closeVaumoney
+                : () =>
+                    this.setState({ openProfiles: !this.state.openProfiles }) //this.props.emulateRoot // this.props.closeVaumoney
             }
             style={{
               margin: "10px",
@@ -317,12 +367,12 @@ class Email extends React.Component {
               color: "rgb(25,35,25)",
               zIndex: "3",
               transition: ".3s ease-in",
-              transform: `rotate(${this.state.openIssuers ? "-90" : "0"}deg)`
+              transform: `rotate(${this.state.openProfiles ? "-90" : "0"}deg)`
             }}
           >
             {"<"}
           </div>
-          {this.state.openIssuers ? (
+          {this.state.openProfiles ? (
             <span>issuers{space}payout</span>
           ) : !this.state.openFormSecure ? (
             <form
@@ -412,113 +462,263 @@ class Email extends React.Component {
               mailing
             </span>
           )}
-          {!this.state.openIssuers &&
-            (this.state.publicToken ? (
-              this.state.balance ? (
-                "payout (taxable)"
-              ) : (
-                "delete"
-              )
+          {this.state.openProfiles ? null : this.state.publicToken ? (
+            this.state.balance ? (
+              "payout (taxable)"
             ) : (
-              <div
-                ref={this.props.stripeemailaddress}
-                onClick={async () => {
-                  /*if (!this.state.account)
+              "delete"
+            )
+          ) : (
+            <div
+              ref={this.props.stripeemailaddress}
+              onClick={async () => {
+                /*if (!this.state.account)
               return this.setState({ openLinkToStripe: true },()=>{
                 
               });*/
-                  const { email } = this.props.auth;
-                  console.log(this.props.auth);
-                  if (
-                    !email ||
-                    !this.props.auth.emailVerified ||
-                    email !== this.state.openEmail
-                  )
-                    return this.FIREBASE_EMAIL.current.click();
+                const { email } = this.props.auth;
+                console.log(this.props.auth);
+                if (
+                  !email ||
+                  !this.props.auth.emailVerified ||
+                  email !== this.state.openEmail
+                )
+                  return this.FIREBASE_EMAIL.current.click();
 
-                  if (this.state.emailAuth) return emailCallback();
+                if (this.state.emailAuth) return emailCallback();
 
-                  fetchSignInMethodsForEmail(getAuth(), email)
-                    .then((signInMethods) => {
-                      if (
-                        signInMethods.indexOf(
-                          EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
-                        ) > -1
-                      )
-                        return emailCallback();
+                fetchSignInMethodsForEmail(getAuth(), email)
+                  .then((signInMethods) => {
+                    if (
+                      signInMethods.indexOf(
+                        EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD
+                      ) > -1
+                    )
+                      return emailCallback();
 
-                      const canSignLinkEmail = isSignInWithEmailLink(
+                    const canSignLinkEmail = isSignInWithEmailLink(
+                      getAuth(),
+                      window.location.href
+                    ); //console.log("getAuth() a.k.a. auth ", getAuth());
+                    console.log(
+                      `can${canSignLinkEmail ? "" : "'t"} sign in with ` + email
+                    );
+                    if (canSignLinkEmail)
+                      return signInWithEmailLink(
                         getAuth(),
+                        email,
                         window.location.href
-                      ); //console.log("getAuth() a.k.a. auth ", getAuth());
-                      console.log(
-                        `can${canSignLinkEmail ? "" : "'t"} sign in with ` +
-                          email
-                      );
-                      if (canSignLinkEmail)
-                        return signInWithEmailLink(
-                          getAuth(),
-                          email,
-                          window.location.href
-                        )
-                          .then(() => {
-                            window.alert(email + " added!");
-                            this.props.navigate("/");
-                          })
-                          .catch((e) => {
-                            console.log(e.message);
-                            if (e.message === "INVALID_OOB_CODE") {
-                              window.alert(
-                                `The ${email}-confirmation link was already either used or is just expired.`
-                              );
-                              this.props.navigate("/login");
-                            }
-                          });
-                      const cb = (success) =>
-                        this.setState({
-                          humanCodeCredential: !success
-                        }); //reauth then //if (this.state.humanCodeCredential === 2)
-                      sendSignInLinkToEmail(getAuth(), this.props.auth.email, {
-                        handleCodeInApp: true,
-                        url: window.location.href
-                      })
+                      )
                         .then(() => {
-                          window.alert("visit your email");
-                          cb(true);
+                          window.alert(email + " added!");
+                          this.props.navigate("/");
                         })
-                        .catch(() => cb()); //this would invalidate phone auth?
-                      //https://firebase.google.com/docs/auth/flutter/email-link-auth
+                        .catch((e) => {
+                          console.log(e.message);
+                          if (e.message === "INVALID_OOB_CODE") {
+                            window.alert(
+                              `The ${email}-confirmation link was already either used or is just expired.`
+                            );
+                            this.props.navigate("/login");
+                          }
+                        });
+                    const cb = (success) =>
+                      this.setState({
+                        humanCodeCredential: !success
+                      }); //reauth then //if (this.state.humanCodeCredential === 2)
+                    sendSignInLinkToEmail(getAuth(), this.props.auth.email, {
+                      handleCodeInApp: true,
+                      url: window.location.href
+                    })
+                      .then(() => {
+                        window.alert("visit your email");
+                        cb(true);
+                      })
+                      .catch(() => cb()); //this would invalidate phone auth?
+                    //https://firebase.google.com/docs/auth/flutter/email-link-auth
+                  })
+                  .catch(standardCatch);
+              }}
+              //src={""}
+              style={{
+                display: "flex",
+                position: "absolute",
+                right: "0px",
+                margin: "10px",
+                width: "36px",
+                top: "0px",
+                border: "1px solid" + (this.props.stripe ? " pink" : " black"),
+                height: "36px",
+                backgroundColor:
+                  !this.state.submitStripe && this.state.openFormSecure
+                    ? "rgb(255,217,102)" //"rgb(146,184,218)"
+                    : "rgb(25,35,25)",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: "1",
+                color:
+                  !this.state.submitStripe && this.state.openFormSecure
+                    ? "navy" //"rgb(207,226,243)" // "rgb(207,226,243)" //"rgb(146,184,218)"
+                    : "white"
+              }}
+              //alt="err"
+            >
+              +
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            margin: "5px",
+            width: "100%",
+            display: this.state.openProfiles ? "block" : "none"
+          }}
+        >
+          {username === "waiting" ? (
+            <S404
+              scrolling={this.props.scrolling}
+              lastPath={this.props.lastPathname}
+              pathname={this.props.pathname}
+              history={this.props.history}
+              auth={this.props.auth}
+            />
+          ) : (
+            username
+          )}
+          <br />
+          <select
+            onChange={(e) => {
+              this.setState({ selectThisOne: e.target.id });
+            }}
+          >
+            {[
+              "7011 Home: real property development management operations",
+              "8099 Patient: out-of-pocket health care providers",
+              "8299 Student: school tuition",
+              "8398 Charity: foundation"
+            ].map((x, i) => (
+              <option id={x.substring(0, 4)} key={x + i}>
+                {x.split(": ")[1]}
+              </option>
+            ))}
+          </select>
+          <br />
+          <br />
+          {username !== "waiting" && (
+            <PayNow
+              payoutType={this.state.payoutType}
+              setPayoutType={(e) => this.setState({ payoutType: e })}
+              setPaymentItems={(e) => this.setState({ paymentItems: e })}
+              paymentItems={this.state.paymentItems}
+              amount={this.state.amount}
+              setAmount={(e) => this.setState(e)}
+              submit={() => {
+                var answer = window.confirm(
+                  "Pay " +
+                    this.state.viewUser.username +
+                    " " +
+                    this.state.amount +
+                    "?"
+                );
+                const paynow = async () => {
+                  const { paymentItems } = this.state;
+                  const expiry = paymentItems.expiry.split("/");
+                  const address = Object.keys(paymentItems.billing_details)
+                    .map((x) => {
+                      //console.log(remaining, event.value.address[next]);
+                      return paymentItems.billing_details[x]
+                        ? {
+                            [x]: paymentItems.billing_details[x]
+                          }
+                        : "";
+                    })
+                    .filter((x) => x !== "")
+                    .reduce(function (result, current) {
+                      return Object.assign(result, current);
+                    }, {});
+                  const personal = {
+                    address,
+                    phone: this.props.auth.phoneNumber,
+                    name:
+                      paymentItems.first +
+                      paymentItems.middle +
+                      paymentItems.last,
+                    email: this.props.auth.email
+                  };
+                  const bankcard =
+                    this.state.payoutType !== "bank"
+                      ? {
+                          primary: paymentItems.number,
+                          exp_month: expiry[0],
+                          exp_year: expiry[1],
+                          cvc: paymentItems.cvc,
+                          //cardElement
+                          ...personal
+                        }
+                      : {
+                          //country: user.address.country,
+                          //currency: "USD",
+                          company: paymentItems.account_holder_type,
+                          account: paymentItems.account_number,
+                          //account_type: this.state.account_type,
+                          routing: paymentItems.routing_number,
+                          savings: paymentItems.savings,
+
+                          ...personal
+                        };
+
+                  await fetch("https://vault-co.in/paynow", {
+                    method: "POST",
+                    headers: {
+                      "Access-Control-Request-Method": "POST",
+                      "Access-Control-Request-Headers": [
+                        "Origin",
+                        "Content-Type"
+                      ], //allow referer
+                      "Content-Type": "Application/JSON"
+                    },
+                    body: JSON.stringify({
+                      type:
+                        this.state.payoutType === "bank"
+                          ? "us_bank_account"
+                          : "card",
+                      //paymentMethod: x.id,
+                      //customerId: user[`customer${sht}Id`],
+                      //storeId: this.state.chosenRecipient[`stripe83Id`],
+                      currency: "usd",
+                      total: this.state.amount,
+                      ...bankcard
+                    })
+                  }) //stripe account, not plaid access token payout yet
+                    .then(async (res) => await res.json())
+                    .then(async (result) => {
+                      if (result.status) return console.log(result);
+                      if (result.error) return console.log(result);
+                      if (!result.data)
+                        return console.log("dev error (Cash)", result);
+                      console.log(result.data);
                     })
                     .catch(standardCatch);
-                }}
-                //src={""}
-                style={{
-                  display: "flex",
-                  position: "absolute",
-                  right: "0px",
-                  margin: "10px",
-                  width: "36px",
-                  top: "0px",
-                  border:
-                    "1px solid" + (this.props.stripe ? " pink" : " black"),
-                  height: "36px",
-                  backgroundColor:
-                    !this.state.submitStripe && this.state.openFormSecure
-                      ? "rgb(255,217,102)" //"rgb(146,184,218)"
-                      : "rgb(25,35,25)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: "1",
-                  color:
-                    !this.state.submitStripe && this.state.openFormSecure
-                      ? "navy" //"rgb(207,226,243)" // "rgb(207,226,243)" //"rgb(146,184,218)"
-                      : "white"
-                }}
-                //alt="err"
-              >
-                +
-              </div>
-            ))}
+                };
+                answer && paynow();
+              }}
+            />
+          )}
+          {/*<MicroVerify
+                user={this.state.user}
+                linksure={this.props.linksure}
+                shorter={shorter}
+                show={
+                  this.state.user &&
+                  this.state.user[`stripe${shorter(this.state.selectThisOne)}Id`]
+                }
+                selectThisOne={this.state.selectThisOne}
+                stripePromise={stripePromise}
+                list={this.props.list}
+                setEmail={this.props.setEmail}
+                chosenRecipient={this.props.chosenRecipient}
+                payoutType={this.props.payoutType}
+              />*/}
         </div>
         <FIREBASE_MULTI
           ref={{
@@ -734,7 +934,7 @@ class Email extends React.Component {
           </div>
         )}
         {
-          /*this.state.openIssuers ? (
+          /*this.state.openProfiles ? (
           this.state.banks.map((x) => {
             return <div></div>;
           })

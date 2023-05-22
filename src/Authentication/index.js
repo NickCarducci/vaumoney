@@ -15,11 +15,8 @@ import S404 from "./404.js";
 import {
   getFirestore,
   doc,
-  onSnapshot,
-  query,
-  collection,
-  where,
-  getDocs
+  onSnapshot
+  //
 } from "firebase/firestore";
 import {
   browserSessionPersistence,
@@ -34,12 +31,12 @@ import Legal from "./Application/Legal";
 import Stop from "./Stop";
 import Documentation from "./Documentation";
 import TwitterTweetEmbed from "../TwitterTweetEmbed";
-import MicroVerify from "./Cash/MicroVerify";
+
 import { loadStripe } from "@stripe/stripe-js";
 import { specialFormatting } from "./Cash/Email";
 import { countries } from "./Cash/countries";
 import { states } from "./Cash/utils";
-import PayNow from "./Cash/PayNow";
+
 const stripePromise = loadStripe(
   "pk_test_51MTtNXGVa6IKUDzpbVag2vdLVm7bU8lfz3sCH0DmMLF9eAhqAJDNyxXxJLzZ2i0YyCkFRCcrjr0qMKD5eIEkLClB00GGdnmtDm"
   //"pk_live_51MTtNXGVa6IKUDzpzfh68EGc5WtnlPHrbihfLz6l4dOjYP9YSU6Sf2a50F1Jcb0iajYsYe6zqmPzbJMmT3RDb2OX00zhmtlWzf"
@@ -488,8 +485,7 @@ class FIREBASE_APP extends React.Component {
       defaultSendingFund: [],
       //openLeisure: true,
       openExemption: true,
-      oldTime: 0,
-      viewUser: undefined
+      oldTime: 0
     };
     this.api = [
       "scope",
@@ -543,31 +539,9 @@ class FIREBASE_APP extends React.Component {
     const { pathname } = this.props;
     if (pathname !== "/")
       this.setState(
-        { main: true, onroot: ["/login", "/weed"].includes(pathname) },
-        () => this.queryProfiles()
+        { main: true, onroot: !["/"].includes(pathname) }, //["/login", "/weed"].includes(pathname) },
+        () => {}
       );
-  };
-  queryProfiles = () => {
-    const pathSegment = this.props.pathname.split("/")[1];
-    console.log("pathSegment", pathSegment);
-    onSnapshot(
-      query(
-        collection(firestore, "users"),
-        where("username", "==", pathSegment)
-      ),
-      (snapshot) => {
-        this.setState({
-          viewUser: snapshot.docs
-            .map((doc) => {
-              if (doc.exists()) {
-                return { ...doc.data(), id: doc.id };
-              } else return "";
-            })
-            .filter((x) => x !== "")[0]
-        });
-      },
-      standardCatch
-    );
   };
   componentWillUnmount = () => {
     clearInterval(this.indexDotCCtimeout);
@@ -585,20 +559,13 @@ class FIREBASE_APP extends React.Component {
         );
       console.log("••• " + pathname);
     }
-    if (this.state.viewUser !== this.state.lastUser) {
-      this.state.viewUser &&
-        console.log("profile ", this.state.viewUser.username);
-      this.setState({
-        lastUser: this.state.viewUser
-      });
-    }
   };
   render() {
     //const { user } = this.state;//why doesn't this work/not reach else in hiddenUserData?
     //const { no404 } = this.props;
     const no404 =
       !this.state.main ||
-      this.props.pathname === "/login" ||
+      true || //!["/"].includes(this.props.pathname) ||
       this.state.user !== undefined;
 
     const hiddenUserData = (ath) => {
@@ -711,76 +678,6 @@ class FIREBASE_APP extends React.Component {
         }
       });
     };
-    const paynow = async () => {
-      const { paymentItems } = this.state;
-      const expiry = paymentItems.expiry.split("/");
-      const address = Object.keys(paymentItems.billing_details)
-        .map((x) => {
-          //console.log(remaining, event.value.address[next]);
-          return paymentItems.billing_details[x]
-            ? {
-                [x]: paymentItems.billing_details[x]
-              }
-            : "";
-        })
-        .filter((x) => x !== "")
-        .reduce(function (result, current) {
-          return Object.assign(result, current);
-        }, {});
-      const personal = {
-        address,
-        phone: this.props.auth.phoneNumber,
-        name: paymentItems.first + paymentItems.middle + paymentItems.last,
-        email: this.props.auth.email
-      };
-      const bankcard =
-        this.state.payoutType !== "bank"
-          ? {
-              primary: paymentItems.number,
-              exp_month: expiry[0],
-              exp_year: expiry[1],
-              cvc: paymentItems.cvc,
-              //cardElement
-              ...personal
-            }
-          : {
-              //country: user.address.country,
-              //currency: "USD",
-              company: paymentItems.account_holder_type,
-              account: paymentItems.account_number,
-              //account_type: this.state.account_type,
-              routing: paymentItems.routing_number,
-              savings: paymentItems.savings,
-
-              ...personal
-            };
-
-      await fetch("https://vault-co.in/paynow", {
-        method: "POST",
-        headers: {
-          "Access-Control-Request-Method": "POST",
-          "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
-          "Content-Type": "Application/JSON"
-        },
-        body: JSON.stringify({
-          type: this.state.payoutType === "bank" ? "us_bank_account" : "card",
-          //paymentMethod: x.id,
-          //customerId: user[`customer${sht}Id`],
-          //storeId: this.state.chosenRecipient[`stripe83Id`],
-          currency: "usd",
-          total: this.state.amount,
-          ...bankcard
-        })
-      }) //stripe account, not plaid access token payout yet
-        .then(async (res) => await res.json())
-        .then(async (result) => {
-          if (result.status) return console.log(result);
-          if (result.error) return console.log(result);
-          if (!result.data) return console.log("dev error (Cash)", result);
-          console.log(result.data);
-        })
-        .catch(standardCatch);
-    };
     return this.props.pathname.includes("/terms") ? (
       <div>
         You agree to not surrender any other's rights by enduring trades with
@@ -799,60 +696,6 @@ class FIREBASE_APP extends React.Component {
         <a href="https://vau.money/terms">sold</a>
         {space}nor discounted/gifted.
         {/*nor does it affect the chronology of transactions.*/}
-      </div>
-    ) : this.state.viewUser !== undefined ? (
-      <div style={{ margin: "5px" }}>
-        {this.state.viewUser.username}
-        <br />
-        <select
-          onChange={(e) => {
-            this.setState({ selectThisOne: e.target.id });
-          }}
-        >
-          {[
-            "7011 Home: real property development management operations",
-            "8099 Patient: out-of-pocket health care providers",
-            "8299 Student: school tuition",
-            "8398 Charity: foundation"
-          ].map((x) => (
-            <option id={x.substring(0, 4)}>{x.split(": ")[1]}</option>
-          ))}
-        </select>
-        <br />
-        <br />
-        <PayNow
-          payoutType={this.state.payoutType}
-          setPayoutType={(e) => this.setState({ payoutType: e })}
-          setPaymentItems={(e) => this.setState({ paymentItems: e })}
-          paymentItems={this.state.paymentItems}
-          amount={this.state.amount}
-          setAmount={(e) => this.setState(e)}
-          submit={() => {
-            var answer = window.confirm(
-              "Pay " +
-                this.state.viewUser.username +
-                " " +
-                this.state.amount +
-                "?"
-            );
-            answer && paynow();
-          }}
-        />
-        {/*<MicroVerify
-          user={this.state.user}
-          linksure={this.props.linksure}
-          shorter={shorter}
-          show={
-            this.state.user &&
-            this.state.user[`stripe${shorter(this.state.selectThisOne)}Id`]
-          }
-          selectThisOne={this.state.selectThisOne}
-          stripePromise={stripePromise}
-          list={this.props.list}
-          setEmail={this.props.setEmail}
-          chosenRecipient={this.props.chosenRecipient}
-          payoutType={this.props.payoutType}
-        />*/}
       </div>
     ) : this.props.pathname.includes("/docs") ? (
       <Documentation

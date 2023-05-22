@@ -670,6 +670,7 @@ class Cash extends React.Component {
         }}
       >
         <Email
+          pathname={this.props.pathname}
           address={this.state.address}
           stripe={this.state.stripe}
           stripePromise={this.props.stripePromise}
