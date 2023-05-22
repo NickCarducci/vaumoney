@@ -38,8 +38,8 @@ import { countries } from "./Cash/countries";
 import { states } from "./Cash/utils";
 
 const stripePromise = loadStripe(
-  "pk_test_51MTtNXGVa6IKUDzpbVag2vdLVm7bU8lfz3sCH0DmMLF9eAhqAJDNyxXxJLzZ2i0YyCkFRCcrjr0qMKD5eIEkLClB00GGdnmtDm"
-  //"pk_live_51MTtNXGVa6IKUDzpzfh68EGc5WtnlPHrbihfLz6l4dOjYP9YSU6Sf2a50F1Jcb0iajYsYe6zqmPzbJMmT3RDb2OX00zhmtlWzf"
+  //"pk_test_51MTtNXGVa6IKUDzpbVag2vdLVm7bU8lfz3sCH0DmMLF9eAhqAJDNyxXxJLzZ2i0YyCkFRCcrjr0qMKD5eIEkLClB00GGdnmtDm"
+  "pk_live_51MTtNXGVa6IKUDzpzfh68EGc5WtnlPHrbihfLz6l4dOjYP9YSU6Sf2a50F1Jcb0iajYsYe6zqmPzbJMmT3RDb2OX00zhmtlWzf"
 );
 const forbiddenUsernames = [
   "event",
