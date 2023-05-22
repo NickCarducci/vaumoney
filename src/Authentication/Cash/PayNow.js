@@ -261,7 +261,7 @@ export default class PayNow extends React.Component {
               this.props.setPayoutType(e.target.value);
           }}
         >
-          {["send cash", "bank", "card"].map((x) => {
+          {["send cash", "card"].map((x) => {
             return <option key={x + "payout"}>{x}</option>;
           })}
         </select>

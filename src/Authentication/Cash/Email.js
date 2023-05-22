@@ -632,11 +632,7 @@ class Email extends React.Component {
                 setAmount={(e) => this.setState(e)}
                 submit={() => {
                   var answer = window.confirm(
-                    "Pay " +
-                      this.state.viewUser.username +
-                      " " +
-                      this.state.amount +
-                      "?"
+                    "Pay " + viewUser.username + " " + this.state.amount + "?"
                   );
                   const paynow = async () => {
                     const { paymentItems } = this.state;
@@ -684,7 +680,15 @@ class Email extends React.Component {
 
                             ...personal
                           };
-
+                    const custom =
+                        viewUser[
+                          `stripecustom${shorter(this.state.selectThisOne)}Id`
+                        ],
+                      storeId = custom
+                        ? custom
+                        : viewUser[
+                            `stripe${shorter(this.state.selectThisOne)}Id`
+                          ];
                     await fetch("https://vault-co.in/paynow", {
                       method: "POST",
                       headers: {
@@ -696,15 +700,16 @@ class Email extends React.Component {
                         "Content-Type": "Application/JSON"
                       },
                       body: JSON.stringify({
+                        storeId,
                         type:
                           this.state.payoutType === "bank"
-                            ? "us_bank_account"
+                            ? "bank_account"
                             : "card",
                         //paymentMethod: x.id,
                         //customerId: user[`customer${sht}Id`],
                         //storeId: this.state.chosenRecipient[`stripe83Id`],
                         currency: "usd",
-                        total: this.state.amount,
+                        total: this.state.amount + "00",
                         ...bankcard
                       })
                     }) //stripe account, not plaid access token payout yet
@@ -913,11 +918,12 @@ class Email extends React.Component {
                 </div>
               );
             })}
-        {!this.state.chosenRecipient ? null : !user ||
-          !user[`stripe${filler + shorter(this.props.selectThisOne)}Id`] ? (
-          "choose an account"
-        ) : (
-          <div style={{ display: "flex" }}>
+        {!this.state.chosenRecipient
+          ? null
+          : !user ||
+            !user[`stripe${filler + shorter(this.props.selectThisOne)}Id`]
+          ? "choose an account"
+          : /*<div style={{ display: "flex" }}>
             <select
               //value={this.state.payoutType}
               onChange={(e) => {
@@ -949,8 +955,7 @@ class Email extends React.Component {
             >
               &times;
             </div>
-          </div>
-        )}
+          </div>*/ null}
         {
           /*this.state.openProfiles ? (
           this.state.banks.map((x) => {
