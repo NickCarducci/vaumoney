@@ -626,6 +626,7 @@ class Email extends React.Component {
                   `stripe${shorter(this.state.selectThisOne)}Link`
                 ])) && (
               <PayNow
+                paynow={true}
                 stripePromise={stripePromise}
                 payoutType={this.state.payoutType}
                 setPayoutType={(e) => this.setState({ payoutType: e })}
@@ -633,7 +634,7 @@ class Email extends React.Component {
                 paymentItems={this.state.paymentItems}
                 amount={this.state.amount}
                 setAmount={(e) => this.setState(e)}
-                submit={() => {
+                submit={(cardResult, cb) => {
                   var answer = window.confirm(
                     "Pay " + viewUser.username + " " + this.state.amount + "?"
                   );
@@ -692,6 +693,7 @@ class Email extends React.Component {
                         : viewUser[
                             `stripe${shorter(this.state.selectThisOne)}Id`
                           ];
+
                     await fetch("https://vault-co.in/paynow", {
                       method: "POST",
                       headers: {
@@ -703,6 +705,9 @@ class Email extends React.Component {
                         "Content-Type": "Application/JSON"
                       },
                       body: JSON.stringify({
+                        card: {
+                          payment_token: cardResult.token.id
+                        },
                         storeId,
                         type:
                           this.state.payoutType === "bank"
@@ -713,16 +718,16 @@ class Email extends React.Component {
                         //storeId: this.state.chosenRecipient[`stripe83Id`],
                         currency: "usd",
                         total: this.state.amount + "00",
-                        ...bankcard
+                        //...bankcard
+                        ...personal
                       })
                     }) //stripe account, not plaid access token payout yet
                       .then(async (res) => await res.json())
                       .then(async (result) => {
-                        if (result.status) return console.log(result);
-                        if (result.error) return console.log(result);
-                        if (!result.data)
-                          return console.log("dev error (Cash)", result);
-                        console.log(result.data);
+                        const clientSecret = result.paymentIntent.client_secret;
+                        if (!clientSecret)
+                          return console.log(`dev error`, result);
+                        cb(clientSecret);
                       })
                       .catch(standardCatch);
                   };

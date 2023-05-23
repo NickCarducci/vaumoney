@@ -612,7 +612,7 @@ class Cash extends React.Component {
       const deleteThese = [];
       if (deleteThese.length !== 0) return this.deleteThese(deleteThese);
       if (this.state.selectThisOne !== x.mcc)
-        return this.setState({ selectThisOne: x.mcc });
+        return this.setState({ selectThisOne: x.mcc, balance: false });
 
       const trust = myStripeAccounts.find((e) => e.mcc === x.mcc),
         { address: addr } = user; //this address was
@@ -875,7 +875,7 @@ class Cash extends React.Component {
             hide={!this.state.openPaymentSecure}
             amount={2.99}
             setAmount={() => {}}
-            submit={async () => {
+            submit={async (cardResult, cb) => {
               const { openPaymentSecure: trust } = this.state;
               const { address: addr, first, last } = user;
               if (
@@ -1295,7 +1295,10 @@ class Cash extends React.Component {
                 {custom && (
                   <select
                     onChange={(e) =>
-                      this.setState({ usecustom: e.target.value === "issuing" })
+                      this.setState({
+                        usecustom: e.target.value === "issuing",
+                        balance: false
+                      })
                     }
                   >
                     {["standard", "issuing"].map((x) => (
@@ -1323,8 +1326,8 @@ class Cash extends React.Component {
                 <div style={{ display: "flex" }}>
                   {this.state.selectThisOne &&
                     tru &&
-                    (this.state[`balance${filler + shorter(x.mcc)}`] ? (
-                      this.state[`balance${filler + shorter(x.mcc)}`]
+                    (this.state.balance ? (
+                      this.state.balance
                     ) : (
                       <div
                         style={{
@@ -1357,9 +1360,9 @@ class Cash extends React.Component {
                               if (!result.balance)
                                 return console.log("dev error (Cash)", result);
                               console.log(result.balance.available[0].amount);
+                              //[`balance${filler + shorter(x.mcc)}`]
                               this.setState({
-                                [`balance${filler + shorter(x.mcc)}`]: result
-                                  .balance.available[0].amount
+                                balance: result.balance.available[0].amount
                               });
                             })
                             .catch(standardCatch);
@@ -1434,7 +1437,11 @@ class Cash extends React.Component {
         {noAccountYetArray && (
           <span
             onClick={() =>
-              this.setState({ selectThisOne: null, requestBuyer: null })
+              this.setState({
+                selectThisOne: null,
+                requestBuyer: null,
+                balance: false
+              })
             }
             style={{
               textDecoration: this.state.selectThisOne ? "underline" : "none",
@@ -1485,3 +1492,400 @@ class Cash extends React.Component {
 export default React.forwardRef((props, ref) => (
   <Cash {...props} {...ref.current} />
 ));
+
+/**
+ * 
+            submit={async (cardResult, cb) => {
+              const { openPaymentSecure: trust } = this.state;
+              const { address: addr, first, last } = user;
+              if (
+                user[`stripecustom${shorter(trust.mcc)}Id`] &&
+                user[`stripecustom${shorter(trust.mcc)}Link`]
+              )
+                return console.log("must authorize stripecustom"); //open to yet address
+
+              const address = Object.keys(paymentItems.billing_details)
+                .map((x) => {
+                  //console.log(remaining, event.value.address[next]);
+                  return paymentItems.billing_details[x]
+                    ? {
+                        [x]: paymentItems.billing_details[x]
+                      }
+                    : "";
+                })
+                .filter((x) => x !== "")
+                .reduce(function (result, current) {
+                  return Object.assign(result, current);
+                }, {});
+              const personal = {
+                address,
+                phone: this.props.auth.phoneNumber,
+                name:
+                  paymentItems.first + paymentItems.middle + paymentItems.last,
+                email: this.props.auth.email
+              };
+              await fetch("https://vault-co.in/paynow", {
+                method: "POST",
+                headers: {
+                  "Access-Control-Request-Method": "POST",
+                  "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
+                  "Content-Type": "Application/JSON"
+                },
+                body: JSON.stringify({
+                  card: {
+                    payment_token: cardResult.token.id
+                  },
+                  storeId: "acct_1NAchIGbvxLpUMRX",
+                  type:
+                    this.state.payoutType === "bank" ? "bank_account" : "card",
+                  //paymentMethod: x.id,
+                  //customerId: user[`customer${sht}Id`],
+                  //storeId: this.state.chosenRecipient[`stripe83Id`],
+                  currency: "usd",
+                  total: 2.99 + "00",
+                  //...bankcard
+                  ...personal
+                })
+              }) //stripe account, not plaid access token payout yet
+                .then(async (res) => await res.json())
+                .then(async (result) => {
+                  const clientSecret = result.paymentIntent.client_secret;
+                  if (!clientSecret) return console.log(`dev error`, result);
+                  if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
+                    const payments = true;
+                    purchase(trust, payments);
+                  }
+                  /*if (!addr)
+          //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
+          return this.setState({ openFormSecure: true });* /
+
+          const address = Object.keys(addr)
+          .map((x) => {
+            //console.log(remaining, event.value.address[next]);
+            return addr[x]
+              ? {
+                  [x]: addr[x]
+                }
+              : "";
+          })
+          .filter((x) => x !== "")
+          .reduce(function (result, current) {
+            return Object.assign(result, current);
+          }, {});
+
+        var edit = {
+          //authorId: this.props.auth.uid,
+          mcc: trust.mcc,
+          last,
+          email: this.props.auth.email,
+          //address: auth.address,
+          name: first + " " + last,
+          phone: this.props.auth.phoneNumber,
+          shipping: {
+            address,
+            name: first + " " + last,
+            phone: this.props.auth.phoneNumber
+          },
+          address,
+          description: trust.description
+        };
+        /*setDoc(
+doc(
+  collection(firestore, "customers"),
+  trust.mcc + this.props.auth.uid
+),
+edit
+).then(() => {* /
+var cardholder = {
+  //cardholderId:user[`cardholderId${shorter(trust.mcc)}Id`],
+  //authorId: this.props.auth.uid,
+  mcc: trust.mcc,
+  name: first + " " + last,
+  email: this.props.auth.email,
+  phone_number: this.props.auth.phoneNumber,
+  status: "active",
+  type: "individual",
+  individual: {
+    first_name: first,
+    last_name: last
+  },
+  billing: {
+    address
+  }
+};
+/*setDoc(
+  doc(
+    collection(firestore, "cardholders"),
+    trust.mcc + this.props.auth.uid
+  ),
+  cardholder
+).then(async (docRef) => {* /
+        //no need to get ref.id
+        //neither for prefix count
+        //nor customer + cardholder
+        //try and userDatas update
+        const merchantSurnamePrefix =
+          user.address.country +
+          String(this.state.selectThisOne).substring(0, 2) +
+          edit.last.substring(0, 3).toLocaleUpperCase();
+        const totalMerchantSurnames = await getDoc(
+          doc(
+            collection(firestore, "merchantSurnames"),
+            merchantSurnamePrefix
+          )
+        )
+          .then((dx) => {
+            (dx.exists() ? updateDoc : setDoc)(
+              doc(
+                collection(firestore, "merchantSurnames"),
+                merchantSurnamePrefix
+              ),
+              { count: increment(1) }
+            );
+            return { ...dx.data(), id: dx.id }.count + 1;
+          })
+          .catch((err) => {
+            console.log(
+              "surname update,set, or get failure: ",
+              err.message
+            );
+            return err;
+          });
+        if (
+          !totalMerchantSurnames ||
+          totalMerchantSurnames.constructor !== Number
+        )
+          return window.alert(
+            "dev error (no document can be made): ",
+            totalMerchantSurnames
+          );
+        const invoice_prefix =
+          merchantSurnamePrefix + totalMerchantSurnames;
+        delete edit.authorId;
+        delete edit.mcc;
+        delete edit.last;
+
+        delete cardholder.authorId;
+        delete cardholder.mcc;
+
+        const { paymentItems } = this.state;
+        const expiry = paymentItems.expiry.split("/");
+        const addressToPay = Object.keys(paymentItems.billing_details)
+          .map((x) => {
+            //console.log(remaining, event.value.address[next]);
+            return paymentItems.billing_details[x]
+              ? {
+                  [x]: paymentItems.billing_details[x]
+                }
+              : "";
+          })
+          .filter((x) => x !== "")
+          .reduce(function (result, current) {
+            return Object.assign(result, current);
+          }, {});
+        const personal = {
+          address: addressToPay,
+          phone: this.props.auth.phoneNumber,
+          name:
+            paymentItems.first +
+            paymentItems.middle +
+            paymentItems.last,
+          email: this.props.auth.email
+        };
+        const bankcard =
+          this.state.payoutType !== "bank"
+            ? {
+                primary: paymentItems.number,
+                exp_month: expiry[0],
+                exp_year: expiry[1],
+                cvc: paymentItems.cvc,
+                //cardElement
+                ...personal
+              }
+            : {
+                //country: user.address.country,
+                //currency: "USD",
+                company: paymentItems.account_holder_type,
+                account: paymentItems.account_number,
+                //account_type: this.state.account_type,
+                routing: paymentItems.routing_number,
+                savings: paymentItems.savings,
+
+                ...personal
+              };
+        const body = {
+          type:
+            this.state.payoutType === "bank"
+              ? "us_bank_account"
+              : "card",
+          customer: {
+            ...edit,
+            invoice_prefix
+            //type: "physical"
+          },
+          cardholder,
+          ...bankcard
+        };
+        //return console.log(body)
+        const issuing = async (cardholder) => {
+          return await fetch("https://vault-co.in/cardholder", {
+            method: "POST",
+            headers: {
+              "Content-Type": "Application/JSON",
+              "Access-Control-Request-Method": "POST",
+              "Access-Control-Request-Headers": [
+                "Origin",
+                "Content-Type"
+              ] //allow referer
+            },
+            body: JSON.stringify(cardholder)
+          })
+            .then(async (res) => await res.json())
+            .then((res) => {
+              if (!res.customer)
+                return console.log(
+                  "no customerId from vault-co.in/customer",
+                  res
+                );
+              getDoc(
+                doc(
+                  collection(firestore, "userDatas"),
+                  this.props.auth.uid
+                )
+              )
+                .then((d) => {
+                  const digits = String(trust.mcc).substring(0, 2);
+                  //kv.invoice_prefix = store.invoice_prefix;
+                  (d.exists() ? updateDoc : setDoc)(
+                    doc(
+                      collection(firestore, "userDatas"),
+                      this.props.auth.uid
+                    ),
+                    {
+                      [`cardholder${digits}Id`]: res.customer.id
+                    }
+                  )
+                    .then(() => {})
+                    .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                })
+                .catch((e) => standardCatch(e));
+            });
+        };
+
+        if (user[`customer${shorter(trust.mcc)}Id`])
+          return issuing(cardholder);
+        const noissuing = async (res, customer) => {
+          console.log(
+            "no customerId+cardholerId from vault-co.in/buy",
+            res
+          );
+
+          if (
+            res.error.raw.message ===
+            "Issuing is only available in testmode for this account."
+          )
+            return await fetch("https://vault-co.in/customer", {
+              method: "POST",
+              headers: {
+                "Content-Type": "Application/JSON",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": [
+                  "Origin",
+                  "Content-Type"
+                ] //allow referer
+              },
+              body: JSON.stringify(customer)
+            })
+              .then(async (res) => await res.json())
+              .then((res) => {
+                if (!res.customer)
+                  return console.log(
+                    "no customerId from vault-co.in/customer",
+                    res
+                  );
+                getDoc(
+                  doc(
+                    collection(firestore, "userDatas"),
+                    this.props.auth.uid
+                  )
+                )
+                  .then((d) => {
+                    const digits = String(trust.mcc).substring(0, 2);
+                    //kv.invoice_prefix = store.invoice_prefix;
+                    (d.exists() ? updateDoc : setDoc)(
+                      doc(
+                        collection(firestore, "userDatas"),
+                        this.props.auth.uid
+                      ),
+                      {
+                        [`customer${digits}Id`]: res.customer.id
+                      }
+                    )
+                      .then(() => {})
+                      .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                  })
+                  .catch((e) => standardCatch(e));
+              });
+        };
+        var bypass = false;
+        if (bypass)
+          return noissuing(
+            {
+              error: {
+                raw: {
+                  message:
+                    "Issuing is only available in testmode for this account."
+                }
+              }
+            },
+            body.customer
+          );
+        return await fetch("https://vault-co.in/buy", {
+          method: "POST",
+          headers: {
+            "Content-Type": "Application/JSON",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": [
+              "Origin",
+              "Content-Type"
+            ] //allow referer
+          },
+          body: JSON.stringify(body)
+        })
+          .then(async (res) => await res.json())
+          .then(async (res) => {
+            if (!res.customer || !res.cardholder) {
+              return noissuing(res, body.customer);
+            }
+            getDoc(
+              doc(
+                collection(firestore, "userDatas"),
+                this.props.auth.uid
+              )
+            )
+              .then((d) => {
+                const digits = String(trust.mcc).substring(0, 2);
+                //kv.invoice_prefix = store.invoice_prefix;
+                (d.exists() ? updateDoc : setDoc)(
+                  doc(
+                    collection(firestore, "userDatas"),
+                    this.props.auth.uid
+                  ),
+                  {
+                    [`customer${digits}Id`]: res.customer.id,
+                    [`cardholder${digits}Id`]: res.cardholder.id,
+                    [`subscription${digits}Id`]: res.subscription.id
+                  }
+                )
+                  .then(() => {
+                    cb(clientSecret);
+                  })
+                  .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+              })
+              .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+          });
+        // { keyvalue },"firestore store id (then callback)"
+        //plaidLink payouts account.details_submitted;
+      });
+  }}
+ */
