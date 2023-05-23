@@ -867,6 +867,7 @@ class Cash extends React.Component {
           </div>
         ) : (
           <PayNow
+            stripePromise={this.props.stripePromise}
             payoutType={this.state.payoutType}
             setPayoutType={(e) => this.setState({ payoutType: e })}
             setPaymentItems={(e) => this.setState({ paymentItems: e })}

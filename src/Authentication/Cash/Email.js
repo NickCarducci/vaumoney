@@ -624,6 +624,7 @@ class Email extends React.Component {
                   `stripe${shorter(this.state.selectThisOne)}Link`
                 ])) && (
               <PayNow
+                stripePromise={stripePromise}
                 payoutType={this.state.payoutType}
                 setPayoutType={(e) => this.setState({ payoutType: e })}
                 setPaymentItems={(e) => this.setState({ paymentItems: e })}
