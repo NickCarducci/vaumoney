@@ -657,6 +657,7 @@ class Cash extends React.Component {
     };
     //console.log("stripe", this.state.stripe);
     //console.log("paymentItems", paymentItems);
+    //console.log("balance", this.state.balance);
     return (
       <div
         style={{
@@ -1109,7 +1110,10 @@ class Cash extends React.Component {
                 if (
                   res.error.raw.message ===
                   "Issuing is only available in testmode for this account."
-                )
+                ) {
+                  window.alert(
+                    "This service is unavailable at the moment. Request that Vaumoney issue cards at support@stripe.com"
+                  );
                   return await fetch("https://vault-co.in/customer", {
                     method: "POST",
                     headers: {
@@ -1152,6 +1156,7 @@ class Cash extends React.Component {
                         })
                         .catch((e) => standardCatch(e));
                     });
+                }
               };
               var bypass = false;
               if (bypass)
@@ -1324,11 +1329,8 @@ class Cash extends React.Component {
                   </span>
                 </div>
                 <div style={{ display: "flex" }}>
-                  {this.state.selectThisOne &&
-                    tru &&
-                    (this.state.balance ? (
-                      this.state.balance
-                    ) : (
+                  {this.state.selectThisOne && tru && (
+                    <div>
                       <div
                         style={{
                           margin: "10px",
@@ -1368,9 +1370,51 @@ class Cash extends React.Component {
                             .catch(standardCatch);
                         }}
                       >
-                        View Balance
+                        View Balance{space}-{space}
+                        {this.state.balance}
                       </div>
-                    ))}
+
+                      {this.state.balance && (
+                        <div
+                          onClick={async () => {
+                            await fetch("https://vault-co.in/payout", {
+                              method: "POST",
+                              headers: {
+                                "Access-Control-Request-Method": "POST",
+                                "Access-Control-Request-Headers": [
+                                  "Origin",
+                                  "Content-Type"
+                                ], //allow referer
+                                "Content-Type": "Application/JSON"
+                              },
+                              body: JSON.stringify({
+                                total: this.state.balance,
+                                storeId:
+                                  user[`stripe${filler + shorter(x.mcc)}Id`]
+                              })
+                            }) //stripe account, not plaid access token payout yet
+                              .then(async (res) => await res.json())
+                              .then(async (result) => {
+                                if (result.status) return console.log(result);
+                                if (result.error) return console.log(result);
+                                if (!result.payout)
+                                  return console.log(
+                                    "dev error (Cash)",
+                                    result
+                                  );
+                                console.log("payout", result.payout);
+                                window.alert(
+                                  "You'll receive your funds in your external account within a business week."
+                                );
+                              })
+                              .catch(standardCatch);
+                          }}
+                        >
+                          payout
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {!user ||
                   !user[`stripe${shorter(this.state.selectThisOne)}Id`] ||
                   user[
