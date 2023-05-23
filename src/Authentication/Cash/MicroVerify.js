@@ -28,13 +28,24 @@ class MicroVerify extends React.Component {
     };
     const space = " ";
     const custom = user && user[`stripecustom${shorter(selectThisOne)}Id`];
-    const filler = custom ? "custom" : "";
+    const filler = this.state.usecustom ? "custom" : "";
     return (
       selectThisOne &&
       user &&
       user[`stripe${filler + shorter(selectThisOne)}Id`] &&
       !linksure(selectThisOne) && (
         <div>
+          {custom && (
+            <select
+              onChange={(e) =>
+                this.setState({ usecustom: e.target.value === "issuing" })
+              }
+            >
+              {["standard", "issuing"].map((x) => (
+                <option>{x}</option>
+              ))}
+            </select>
+          )}
           {user[`customer${shorter(selectThisOne)}Id`] &&
             user[`cardholder${shorter(selectThisOne)}Id`] && (
               <div>
@@ -148,31 +159,31 @@ class MicroVerify extends React.Component {
                             //var paymentElement = elements.create("payment");
                             return (
                               /*<CardElement
-                            `  options={{
-                                style: {
-                                  base: {
-                                    fontFamily: "Space Mono, monospace",
-                                    color: "black"
-                                  }
-                                }
-                              }}
-                              onChange={async (event) => {
-                                //console.log(event);
-                                if (event.complete) {
-                                  if (event.value.name) return null;
-                                }
-                              }}
-                            />*/
-                              //paymen`tElement()
+                    options={{
+                      style: {
+                        base: {
+                          fontFamily: "Space Mono, monospace",
+                          color: "black"
+                        }
+                      }
+                    }}
+                    onChange={async (event) => {
+                      //console.log(event);
+                      if (event.complete) {
+                        if (event.value.name) return null;
+                      }
+                    }}
+                  />*/
+                              //paymentElement()
                               <form
                                 onSubmit={async (event) => {
                                   event.preventDefault();
                                   if (!stripe || !elements) return null; //https://stripe.com/docs/payments/save-and-reuse#web-create-setup-intent
                                   /*
-                                In order to create a payment element, you must pass a clientSecret or mode when creating the Elements group.
+                        In order to create a payment element, you must pass a clientSecret or mode when creating the Elements group.
 
-                                  e.g. stripe.elements({clientSecret: "{{CLIENT_SECRET}}"})
-                                */
+                          e.g. stripe.elements({clientSecret: "{{CLIENT_SECRET}}"})
+                        */
 
                                   elements.submit();
                                   const { error } = await stripe.confirmSetup({
@@ -306,16 +317,16 @@ class MicroVerify extends React.Component {
                                   });
 
                                   /*
-                                https://stripe.com/docs/js/setup_intents/confirm_us_bank_account_setup
-                                const result = await this.state.stripe.confirmPayment(
-                                  {
-                                    //`Elements` instance that was used to create the Payment Element
-                                    elements,
-                                    confirmParams: {
-                                      return_url: `https://${window.location.url}/${this.props.user.username}/thanks`
-                                    }
-                                  }
-                                );*/
+                        https://stripe.com/docs/js/setup_intents/confirm_us_bank_account_setup
+                        const result = await this.state.stripe.confirmPayment(
+                          {
+                            //`Elements` instance that was used to create the Payment Element
+                            elements,
+                            confirmParams: {
+                              return_url: `https://${window.location.url}/${this.props.user.username}/thanks`
+                            }
+                          }
+                        );*/
                                 }}
                               >
                                 <PaymentElement />

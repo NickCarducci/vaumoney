@@ -163,38 +163,40 @@ class Email extends React.Component {
         const { user } = this.props;
         const custom =
           user && user[`stripecustom${shorter(this.props.selectThisOne)}Id`];
-        const filler = custom ? "custom" : "";
         const sht = this.props.selectThisOne
           ? shorter(this.props.selectThisOne)
           : "83";
-        const storeId = this.props.user[`stripe${filler + sht}Id`];
-        //if (!storeId) this.props.setCash({ selectThisOne: 8398 });
-        //return console.log("filler", storeId);
-        updateDoc(doc(firestore, "userDatas", this.props.auth.uid), {
-          address: this.props.address
-        }).then(async () => {
-          await fetch("https://vault-co.in/updateaddress", {
-            method: "POST",
-            headers: {
-              "Access-Control-Request-Method": "POST",
-              "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
-              "Content-Type": "Application/JSON"
-            },
-            body: JSON.stringify({
-              storeId,
-              personId: this.props.user[
-                `person${filler + shorter(this.props.selectThisOne)}Id`
-              ]
-            })
-          }) //stripe account, not plaid access token payout yet
-            .then(async (res) => await res.json())
-            .then(async (result) => {
-              if (result.status) return console.log(result);
-              if (result.error) return console.log(result);
-              if (!result.data) return console.log("dev error (Cash)", result);
-              console.log(result.data);
-            })
-            .catch(standardCatch);
+        (custom ? ["", "custom"] : [""]).forEach((filler) => {
+          const storeId = this.props.user[`stripe${filler + sht}Id`];
+          //if (!storeId) this.props.setCash({ selectThisOne: 8398 });
+          //return console.log("filler", storeId);
+          updateDoc(doc(firestore, "userDatas", this.props.auth.uid), {
+            address: this.props.address
+          }).then(async () => {
+            await fetch("https://vault-co.in/updateaddress", {
+              method: "POST",
+              headers: {
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
+                "Content-Type": "Application/JSON"
+              },
+              body: JSON.stringify({
+                storeId,
+                personId: this.props.user[
+                  `person${filler + shorter(this.props.selectThisOne)}Id`
+                ]
+              })
+            }) //stripe account, not plaid access token payout yet
+              .then(async (res) => await res.json())
+              .then(async (result) => {
+                if (result.status) return console.log(result);
+                if (result.error) return console.log(result);
+                if (!result.data)
+                  return console.log("dev error (Cash)", result);
+                console.log(result.data);
+              })
+              .catch(standardCatch);
+          });
         });
       }
     }

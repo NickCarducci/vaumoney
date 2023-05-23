@@ -1227,14 +1227,13 @@ class Cash extends React.Component {
           }}
         >
           {myStripeAccounts.map((x) => {
+            const custom = user && user[`stripecustom${shorter(x.mcc)}Id`];
+            const filler = this.state.usecustom ? "custom" : "";
             /* cardholderId: user[`cardholder${shtr}Id`],
             accountId: user[`stripe${shtr}Id`],
             link: user[`stripe${shtr}Link`]*/
             //console.log(tru, x.mcc, this.state);
-            const custom = user && user[`stripecustom${shorter(x.mcc)}Id`];
-            const tru = custom
-              ? custom
-              : user && user[`stripe${shorter(x.mcc)}Id`];
+            const tru = user && user[`stripe${filler + shorter(x.mcc)}Id`];
 
             const color =
               x.mcc === "7999"
@@ -1254,7 +1253,6 @@ class Cash extends React.Component {
                   ? "rgb(220,210,110)"
                   : "chocolate"
                 : "black";
-            const filler = custom ? "custom" : "";
             //const issuing = x.capabilities && x.capabilities.card_issuing;
             const issuing = user && user[`cardholder${shorter(x.mcc)}Id`];
             return (x.mcc === "8398" ||
@@ -1294,6 +1292,18 @@ class Cash extends React.Component {
                       : color)
                 }}
               >
+                {custom && (
+                  <select
+                    onChange={(e) =>
+                      this.setState({ usecustom: e.target.value === "issuing" })
+                    }
+                  >
+                    {["standard", "issuing"].map((x) => (
+                      <option>{x}</option>
+                    ))}
+                  </select>
+                )}
+
                 <div onClick={() => makeAccount(x)}>
                   {(x.mcc === "5046" ? "-80% " : "") +
                     x.account +
@@ -1311,48 +1321,53 @@ class Cash extends React.Component {
                   </span>
                 </div>
                 <div style={{ display: "flex" }}>
-                  {this.state.selectThisOne && tru && (
-                    <div
-                      style={{
-                        margin: "10px",
-                        padding: "6px",
-                        color: !tru ? "white" : color,
-                        textDecoration: "underline",
-                        backgroundColor: "white"
-                      }}
-                      onClick={async () => {
-                        await fetch("https://vault-co.in/balance", {
-                          method: "POST",
-                          headers: {
-                            "Access-Control-Request-Method": "POST",
-                            "Access-Control-Request-Headers": [
-                              "Origin",
-                              "Content-Type"
-                            ], //allow referer
-                            "Content-Type": "Application/JSON"
-                          },
-                          body: JSON.stringify({
-                            storeId: user[`stripe${filler + shorter(x.mcc)}Id`]
-                          })
-                        }) //stripe account, not plaid access token payout yet
-                          .then(async (res) => await res.json())
-                          .then(async (result) => {
-                            if (result.status) return console.log(result);
-                            if (result.error) return console.log(result);
-                            if (!result.cashBalance)
-                              return console.log("dev error (Cash)", result);
-                            console.log(result.cashBalance);
-                            this.setState({
-                              [`balance${shorter(x.mcc)}`]: result.cashBalance
-                                .available
-                            });
-                          })
-                          .catch(standardCatch);
-                      }}
-                    >
-                      View Balance
-                    </div>
-                  )}
+                  {this.state.selectThisOne &&
+                    tru &&
+                    (this.state[`balance${filler + shorter(x.mcc)}`] ? (
+                      this.state[`balance${filler + shorter(x.mcc)}`]
+                    ) : (
+                      <div
+                        style={{
+                          margin: "10px",
+                          padding: "6px",
+                          color: !tru ? "white" : color,
+                          textDecoration: "underline",
+                          backgroundColor: "white"
+                        }}
+                        onClick={async () => {
+                          await fetch("https://vault-co.in/balance", {
+                            method: "POST",
+                            headers: {
+                              "Access-Control-Request-Method": "POST",
+                              "Access-Control-Request-Headers": [
+                                "Origin",
+                                "Content-Type"
+                              ], //allow referer
+                              "Content-Type": "Application/JSON"
+                            },
+                            body: JSON.stringify({
+                              storeId:
+                                user[`stripe${filler + shorter(x.mcc)}Id`]
+                            })
+                          }) //stripe account, not plaid access token payout yet
+                            .then(async (res) => await res.json())
+                            .then(async (result) => {
+                              if (result.status) return console.log(result);
+                              if (result.error) return console.log(result);
+                              if (!result.balance)
+                                return console.log("dev error (Cash)", result);
+                              console.log(result.balance.available[0].amount);
+                              this.setState({
+                                [`balance${filler + shorter(x.mcc)}`]: result
+                                  .balance.available[0].amount
+                              });
+                            })
+                            .catch(standardCatch);
+                        }}
+                      >
+                        View Balance
+                      </div>
+                    ))}
                   {!user ||
                   !user[`stripe${shorter(this.state.selectThisOne)}Id`] ||
                   user[
