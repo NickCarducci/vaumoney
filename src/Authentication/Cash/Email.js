@@ -76,7 +76,6 @@ class Email extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      list: [],
       payoutType: "send cash",
       lastPayoutType: "send cash",
       userQuery: "",
@@ -207,39 +206,6 @@ class Email extends React.Component {
         lastUser: this.state.viewUser
       });
     }
-  };
-  list = async (bankcard, customerId) => {
-    console.log("list ", bankcard, customerId);
-    await fetch("https://vault-co.in/list", {
-      method: "POST",
-      headers: {
-        "Access-Control-Request-Method": "POST",
-        "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
-        "Content-Type": "Application/JSON"
-      },
-      body: JSON.stringify({
-        bankcard: bankcard
-          ? bankcard
-          : this.state.payoutType === "Bank"
-          ? "us_bank_account"
-          : "card",
-        customerId: customerId
-          ? customerId
-          : this.props.user[
-              `customer${this.props.shorter(this.props.selectThisOne)}Id`
-            ]
-      })
-    }) //stripe account, not plaid access token payout yet
-      .then(async (res) => await res.json())
-      .then(async (result) => {
-        if (result.status) return console.log(result);
-        if (result.error) return console.log(result);
-        if (!result.paymentMethods)
-          return console.log("dev error (Cash)", result);
-        console.log("paymentMethods", result.paymentMethods);
-        this.setState({ list: result.paymentMethods });
-      })
-      .catch(standardCatch);
   };
   render() {
     const { shorter } = this.props;
@@ -464,13 +430,14 @@ class Email extends React.Component {
               mailing
             </span>
           )}
-          {this.state.openProfiles ? null : this.state.publicToken ? (
+          {
+            /*this.state.openProfiles ? null : this.state.publicToken ? (
             this.state.balance ? (
               "payout (taxable)"
             ) : (
               "delete"
             )
-          ) : (
+          ) : */
             <div
               ref={this.props.stripeemailaddress}
               onClick={async () => {
@@ -567,7 +534,7 @@ class Email extends React.Component {
             >
               +
             </div>
-          )}
+          }
         </div>
         <div
           style={{

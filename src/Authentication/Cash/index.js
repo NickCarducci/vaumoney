@@ -74,12 +74,14 @@ class Cash extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      list: [],
       number: "4242424242424242",
       expiry: "12/34",
       cvc: "000",
       account_holder_type: "individual",
-      account_number: "000123456789",
-      routing_number: "110000000",
+      account_number: "", //000123456789
+      routing_number: "", //110000000
+      savings: "checking",
       //dev: true,
       lastPayoutType: "send cash"
       //business_type: "company", //bank_account_type, retail
@@ -162,7 +164,7 @@ class Cash extends React.Component {
       }
     }
   };
-  findURL = () => {
+  findURL = async () => {
     this.findCustomURL();
     if (this.props.auth === undefined) return null;
     const url = new URL(window.location.href);
@@ -229,7 +231,30 @@ class Cash extends React.Component {
     const clientSec = new URLSearchParams(window.location.search).get(
       "setup_intent_client_secret"
     );
-
+    if (clientSec) {
+      console.log("clientSec", clientSec);
+      await fetch("https://vault-co.in/confirm", {
+        method: "POST",
+        headers: {
+          "Access-Control-Request-Method": "POST",
+          "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
+          "Content-Type": "Application/JSON"
+        },
+        body: JSON.stringify({
+          seti: clientSec
+        })
+      }) //stripe account, not plaid access token payout yet
+        .then(async (res) => await res.json())
+        .then(async (result) => {
+          if (result.status) return console.log(result);
+          if (result.error) return console.log(result);
+          if (!result.setupIntent)
+            return console.log("dev error (Cash)", result);
+          console.log(result.setupIntent);
+          this.props.navigate("/");
+        })
+        .catch(standardCatch);
+    }
     // Retrieve the SetupIntent
     clientSec &&
       this.state.stripe &&
@@ -285,6 +310,37 @@ class Cash extends React.Component {
         if (result.error) return console.log(result);
         if (!result.data) return console.log("dev error (Cash)", result);
         console.log(result.data);
+      })
+      .catch(standardCatch);
+  };
+  list = async (bankcard, customerId) => {
+    console.log("list ", bankcard, customerId);
+    await fetch("https://vault-co.in/list", {
+      method: "POST",
+      headers: {
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": ["Origin", "Content-Type"], //allow referer
+        "Content-Type": "Application/JSON"
+      },
+      body: JSON.stringify({
+        bankcard: bankcard
+          ? bankcard
+          : this.state.payoutType === "Bank"
+          ? "us_bank_account"
+          : "card",
+        customerId: customerId
+          ? customerId
+          : this.props.user[`customer${shorter(this.state.selectThisOne)}Id`]
+      })
+    }) //stripe account, not plaid access token payout yet
+      .then(async (res) => await res.json())
+      .then(async (result) => {
+        if (result.status) return console.log(result);
+        if (result.error) return console.log(result);
+        if (!result.paymentMethods)
+          return console.log("dev error (Cash)", result);
+        console.log("paymentMethods", result.paymentMethods);
+        this.setState({ list: result.paymentMethods });
       })
       .catch(standardCatch);
   };
@@ -623,9 +679,9 @@ class Cash extends React.Component {
         user[`stripe${shorter(trust.mcc)}Id`] &&
         !user[`stripe${shorter(trust.mcc)}Link`]
       ) {
-        if (user[`customer${shorter(trust.mcc)}Id`]) {
+        /*if (user[`customer${shorter(trust.mcc)}Id`]) {
           if (!user[`cardholder${shorter(trust.mcc)}Id`])
-            return console.log("dev error (no card)");
+          return console.log("dev error (no card)");
 
           return window.alert(
             "This is your " +
@@ -633,8 +689,128 @@ class Cash extends React.Component {
               " settlement-checking account with us."
           );
           //submitBankCard();
-        }
+        }*/
         if (!this.state.stripe) return this.stripeemailaddress.current.click();
+        if (!user[`customer${shorter(this.state.selectThisOne)}Id`]) {
+          //const { openPaymentSecure: trust } = this.state;
+          const { address: addr, first, last } = user;
+          if (
+            user[`stripecustom${shorter(trust.mcc)}Id`] &&
+            user[`stripecustom${shorter(trust.mcc)}Link`]
+          )
+            return console.log("must authorize stripecustom"); //open to yet address
+
+          if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
+            const payments = true;
+            purchase(trust, payments);
+          }
+          /*if (!addr)
+    //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
+    return this.setState({ openFormSecure: true });*/
+
+          const address = Object.keys(addr)
+            .map((x) => {
+              //console.log(remaining, event.value.address[next]);
+              return addr[x]
+                ? {
+                    [x]: addr[x]
+                  }
+                : "";
+            })
+            .filter((x) => x !== "")
+            .reduce(function (result, current) {
+              return Object.assign(result, current);
+            }, {});
+
+          var edit = {
+            //authorId: this.props.auth.uid,
+            mcc: trust.mcc,
+            last,
+            email: this.props.auth.email,
+            //address: auth.address,
+            name: first + " " + last,
+            phone: this.props.auth.phoneNumber,
+            shipping: {
+              address,
+              name: first + " " + last,
+              phone: this.props.auth.phoneNumber
+            },
+            address,
+            description: trust.description
+          };
+          const merchantSurnamePrefix =
+            user.address.country +
+            String(this.state.selectThisOne).substring(0, 2) +
+            edit.last.substring(0, 3).toLocaleUpperCase();
+          const totalMerchantSurnames = await getDoc(
+            doc(
+              collection(firestore, "merchantSurnames"),
+              merchantSurnamePrefix
+            )
+          )
+            .then((dx) => {
+              (dx.exists() ? updateDoc : setDoc)(
+                doc(
+                  collection(firestore, "merchantSurnames"),
+                  merchantSurnamePrefix
+                ),
+                { count: increment(1) }
+              );
+              return { ...dx.data(), id: dx.id }.count + 1;
+            })
+            .catch((err) => {
+              console.log("surname update,set, or get failure: ", err.message);
+              return err;
+            });
+          if (
+            !totalMerchantSurnames ||
+            totalMerchantSurnames.constructor !== Number
+          )
+            return window.alert(
+              "dev error (no document can be made): ",
+              totalMerchantSurnames
+            );
+          const invoice_prefix = merchantSurnamePrefix + totalMerchantSurnames;
+          delete edit.authorId;
+          delete edit.mcc;
+          delete edit.last;
+          await fetch("https://vault-co.in/customer", {
+            method: "POST",
+            headers: {
+              "Content-Type": "Application/JSON",
+              "Access-Control-Request-Method": "POST",
+              "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
+            },
+            body: JSON.stringify({
+              ...edit,
+              invoice_prefix
+              //type: "physical"
+            })
+          })
+            .then(async (res) => await res.json())
+            .then(async (result) => {
+              getDoc(
+                doc(collection(firestore, "userDatas"), this.props.auth.uid)
+              )
+                .then((d) => {
+                  const digits = String(trust.mcc).substring(0, 2);
+                  //kv.invoice_prefix = store.invoice_prefix;
+                  (d.exists() ? updateDoc : setDoc)(
+                    doc(
+                      collection(firestore, "userDatas"),
+                      this.props.auth.uid
+                    ),
+                    {
+                      [`customer${digits}Id`]: result.customer.id
+                    }
+                  )
+                    .then(() => {})
+                    .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+                })
+                .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
+            });
+        }
+
         const answer = window.confirm(
           "Would you like a card? YOU WILL BE CHARGED $2.99 this month and monthly until you cancel" +
             (user[`customer${shorter(trust.mcc)}Id`]
@@ -869,8 +1045,8 @@ class Cash extends React.Component {
         ) : (
           <PayNow
             stripePromise={this.props.stripePromise}
-            payoutType={this.state.payoutType}
-            setPayoutType={(e) => this.setState({ payoutType: e })}
+            paymentType={this.state.paymentType}
+            setPayoutType={(e) => this.setState({ paymentType: e })}
             setPaymentItems={(e) => this.setState({ paymentItems: e })}
             paymentItems={this.state.paymentItems}
             hide={!this.state.openPaymentSecure}
@@ -907,22 +1083,6 @@ class Cash extends React.Component {
                   return Object.assign(result, current);
                 }, {});
 
-              var edit = {
-                //authorId: this.props.auth.uid,
-                mcc: trust.mcc,
-                last,
-                email: this.props.auth.email,
-                //address: auth.address,
-                name: first + " " + last,
-                phone: this.props.auth.phoneNumber,
-                shipping: {
-                  address,
-                  name: first + " " + last,
-                  phone: this.props.auth.phoneNumber
-                },
-                address,
-                description: trust.description
-              };
               /*setDoc(
           doc(
             collection(firestore, "customers"),
@@ -958,46 +1118,6 @@ class Cash extends React.Component {
               //neither for prefix count
               //nor customer + cardholder
               //try and userDatas update
-              const merchantSurnamePrefix =
-                user.address.country +
-                String(this.state.selectThisOne).substring(0, 2) +
-                edit.last.substring(0, 3).toLocaleUpperCase();
-              const totalMerchantSurnames = await getDoc(
-                doc(
-                  collection(firestore, "merchantSurnames"),
-                  merchantSurnamePrefix
-                )
-              )
-                .then((dx) => {
-                  (dx.exists() ? updateDoc : setDoc)(
-                    doc(
-                      collection(firestore, "merchantSurnames"),
-                      merchantSurnamePrefix
-                    ),
-                    { count: increment(1) }
-                  );
-                  return { ...dx.data(), id: dx.id }.count + 1;
-                })
-                .catch((err) => {
-                  console.log(
-                    "surname update,set, or get failure: ",
-                    err.message
-                  );
-                  return err;
-                });
-              if (
-                !totalMerchantSurnames ||
-                totalMerchantSurnames.constructor !== Number
-              )
-                return window.alert(
-                  "dev error (no document can be made): ",
-                  totalMerchantSurnames
-                );
-              const invoice_prefix =
-                merchantSurnamePrefix + totalMerchantSurnames;
-              delete edit.authorId;
-              delete edit.mcc;
-              delete edit.last;
 
               delete cardholder.authorId;
               delete cardholder.mcc;
@@ -1047,12 +1167,11 @@ class Cash extends React.Component {
                     };
               const body = {
                 type:
-                  this.state.payoutType === "bank" ? "us_bank_account" : "card",
-                customer: {
-                  ...edit,
-                  invoice_prefix
-                  //type: "physical"
-                },
+                  this.state.paymentType === "bank"
+                    ? "us_bank_account"
+                    : "card",
+                customerId:
+                  user[`customer${shorter(this.state.selectThisOne)}Id`],
                 cardholder,
                 ...bankcard
               };
@@ -1124,7 +1243,7 @@ class Cash extends React.Component {
                         "Content-Type"
                       ] //allow referer
                     },
-                    body: JSON.stringify(customer)
+                    body: JSON.stringify(body)
                   })
                     .then(async (res) => await res.json())
                     .then((res) => {
@@ -1182,7 +1301,7 @@ class Cash extends React.Component {
               })
                 .then(async (res) => await res.json())
                 .then(async (res) => {
-                  if (!res.customer || !res.cardholder) {
+                  if (!res.cardholder) {
                     return noissuing(res, body.customer);
                   }
                   getDoc(
@@ -1197,7 +1316,6 @@ class Cash extends React.Component {
                           this.props.auth.uid
                         ),
                         {
-                          [`customer${digits}Id`]: res.customer.id,
                           [`cardholder${digits}Id`]: res.cardholder.id,
                           [`subscription${digits}Id`]: res.subscription.id
                         }
@@ -1374,7 +1492,7 @@ class Cash extends React.Component {
                         {this.state.balance}
                       </div>
 
-                      {this.state.balance && (
+                      {this.state.balance.constructor === Number && (
                         <div
                           onClick={async () => {
                             await fetch("https://vault-co.in/payout", {
@@ -1411,6 +1529,419 @@ class Cash extends React.Component {
                           }}
                         >
                           payout
+                        </div>
+                      )}
+                      {this.state.balance.constructor === Number && (
+                        <div>
+                          <select
+                            //value={this.state.payoutType}
+                            onChange={(e) => {
+                              if (this.state.payoutType !== e.target.value)
+                                this.setState(
+                                  { payoutType: e.target.value },
+                                  () => {
+                                    //if ("" === e.target.value) return null;
+
+                                    this.list(
+                                      e.target.value === "bank"
+                                        ? "us_bank_account"
+                                        : "card",
+                                      user[
+                                        `customer${shorter(
+                                          this.props.selectThisOne
+                                        )}Id`
+                                      ]
+                                    );
+                                  }
+                                );
+                            }}
+                          >
+                            {["list my accounts", "bank", "card"].map((x) => {
+                              return <option key={x + "payout"}>{x}</option>;
+                            })}
+                          </select>
+                          {this.state.list.length === 0
+                            ? "none"
+                            : this.state.list.map((x) => {
+                                const brand =
+                                  x[
+                                    this.state.payoutType === "Bank"
+                                      ? "us_bank_account"
+                                      : "card"
+                                  ].brand;
+                                return <div>{brand}</div>;
+                              })}
+                        </div>
+                      )}
+
+                      {user &&
+                        user[
+                          `micro${
+                            filler + shorter(this.state.selectThisOne)
+                          }Link`
+                        ] && (
+                          <a
+                            href={
+                              user[
+                                `micro${
+                                  filler + shorter(this.state.selectThisOne)
+                                }Link`
+                              ]
+                            }
+                          >
+                            Verify
+                          </a>
+                        )}
+                      {this.state.balance.constructor === Number && (
+                        <div
+                          style={{ backgroundColor: "white", color: "black" }}
+                        >
+                          {this.state.clientSecret && (
+                            <div>
+                              <Elements
+                                stripe={this.props.stripePromise}
+                                options={{
+                                  clientSecret: this.state.clientSecret
+                                  //mode: "setup", //https://stripe.com/docs/js/elements_object/update#elements_update-options-mode
+                                  //currency: "usd"
+                                  //paymentMethodTypes
+                                }}
+                              >
+                                <ElementsConsumer>
+                                  {(props) => {
+                                    const { stripe, elements } = props;
+                                    /*this.state.stripe !== stripe &&
+                                      this.setState({
+                                        stripe,
+                                        elements
+                                      });*/
+                                    return (
+                                      stripe &&
+                                      (() => {
+                                        return (
+                                          <form
+                                            onSubmit={async (e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+
+                                              if (!stripe || !elements)
+                                                return null;
+
+                                              //elements.submit();
+                                              /*const cardResult = await stripe.tokens.create({
+                                                card: {
+                                                  number: "4242424242424242",
+                                                  exp_month: 5,
+                                                  exp_year: 2024,
+                                                  cvc: "314"
+                                                }
+                                              });*/
+
+                                              stripe //collectBankAccountForSetup
+                                                .confirmUsBankAccountSetup(
+                                                  /*{
+                                                    clientSecret: this.state
+                                                      .clientSecret,
+
+                                                    params: {
+                                                      payment_method_type:
+                                                        "us_bank_account",
+                                                      payment_method_data: {
+                                                        billing_details: {
+                                                          name:
+                                                            user.first +
+                                                            " " +
+                                                            user.last,
+                                                          email: this.props.auth
+                                                            .email
+                                                        }
+                                                      }
+                                                    },
+                                                    expand: ["payment_method"]
+                                                  }*/
+                                                  this.state.clientSecret, //"{SETUP_INTENT_CLIENT_SECRET}",
+                                                  {
+                                                    payment_method: {
+                                                      us_bank_account: {
+                                                        //country: user.address.country,
+                                                        //currency: "USD",
+                                                        account_holder_type: this
+                                                          .state
+                                                          .account_holder_type,
+                                                        account_number: this
+                                                          .state.account_number,
+                                                        //account_type: this.state.account_type,
+                                                        routing_number: this
+                                                          .state.routing_number
+                                                      },
+                                                      billing_details: {
+                                                        address: user.address,
+                                                        phone: this.props.auth
+                                                          .phoneNumber,
+                                                        name:
+                                                          user.first +
+                                                          this.state.middle +
+                                                          user.last,
+                                                        email: this.props.auth
+                                                          .email
+                                                      }
+                                                    }
+                                                  }
+                                                  //https://stripe.com/docs/js/setup_intents/confirm_us_bank_account_setup#stripe_confirm_us_bank_account_setup-attached_payment_method
+                                                )
+                                                .then(async (result) => {
+                                                  if (result.error) {
+                                                    // Inform the customer that there was an error.
+                                                    console.log(
+                                                      result.error.message
+                                                    );
+                                                  } else {
+                                                    // Handle next step based on SetupIntent's status.
+                                                    const {
+                                                      status,
+                                                      id
+                                                    } = result.setupIntent;
+                                                    if (
+                                                      status ===
+                                                      "requires_action"
+                                                    ) {
+                                                      console.log(
+                                                        "status",
+                                                        status
+                                                      );
+                                                      stripe
+                                                        .handleNextAction({
+                                                          clientSecret: this
+                                                            .state.clientSecret
+                                                        })
+                                                        .then((result) => {
+                                                          // Handle result.error or result.paymentIntent
+                                                          if (result.error)
+                                                            return console.log(
+                                                              "error require action setup intent",
+                                                              result
+                                                            );
+                                                          console.log(
+                                                            "success payment intent handle action",
+                                                            result.setupIntent
+                                                          );
+                                                          const microlink =
+                                                            result.setupIntent
+                                                              .next_action
+                                                              .verify_with_microdeposits
+                                                              .hosted_verification_url;
+                                                          updateDoc(
+                                                            doc(
+                                                              collection(
+                                                                firestore,
+                                                                "userDatas"
+                                                              ),
+                                                              this.props.auth
+                                                                .uid
+                                                            ),
+                                                            {
+                                                              [`micro${shorter(
+                                                                this.state
+                                                                  .selectThisOne
+                                                              )}Link`]: microlink
+                                                            }
+                                                          )
+                                                            .then(() => {})
+                                                            .catch((e) =>
+                                                              standardCatch(e)
+                                                            );
+
+                                                          window.location.href = microlink;
+                                                        });
+                                                    } else {
+                                                      console.log(
+                                                        "ok confirmed setup"
+                                                      );
+                                                      if (
+                                                        status ===
+                                                        "requires_payment_method"
+                                                      ) {
+                                                        // Customer canceled the hosted verification modal. Present them with other
+                                                        // payment method type options.
+                                                      } else if (
+                                                        status ===
+                                                        "requires_confirmation"
+                                                      ) {
+                                                        // We collected an account - possibly instantly verified, but possibly
+                                                        // manually-entered. Display payment method details and mandate text
+                                                        // to the customer and confirm the intent once they accept
+                                                        // the mandate.
+                                                        window.alert(
+                                                          "confirming setup"
+                                                        );
+
+                                                        const {
+                                                          error
+                                                        } = await stripe.confirmSetup(
+                                                          {
+                                                            clientSecret: this
+                                                              .state
+                                                              .clientSecret,
+                                                            //`Elements` instance that was used to create the Payment Element
+                                                            elements,
+                                                            confirmParams: {
+                                                              return_url: `https://${window.location.hostname}`
+                                                            }
+                                                          }
+                                                        );
+                                                        if (error)
+                                                          return console.log(
+                                                            "confirm Setup",
+                                                            error
+                                                          );
+                                                      }
+                                                    }
+                                                  }
+                                                });
+                                              /*var cardElement = elements.getElement(
+                                                "card"
+                                              );
+                                              const cardResult = await stripe.createToken(
+                                                cardElement
+                                              );
+                                              cardResult &&
+                                                this.props.submit(
+                                                  cardResult,
+                                                  async (clientSecret) => {
+                                                    const {
+                                                      error
+                                                    } = await stripe.confirmPayment(
+                                                      {
+                                                        clientSecret,
+                                                        //`Elements` instance that was used to create the Payment Element
+                                                        elements,
+                                                        confirmParams: {
+                                                          return_url: `https://${window.location.hostname}/thanks`
+                                                        }
+                                                      }
+                                                    );
+                                                    if (error)
+                                                      return console.log(error);
+                                                    window.alert(
+                                                      "You've paid " +
+                                                        this.state.amount +
+                                                        " to "
+                                                    );
+                                                  }
+                                                );*/
+                                            }}
+                                          >
+                                            <PaymentElement />
+                                            <button type="submit">
+                                              Submit
+                                            </button>
+                                          </form>
+                                        );
+                                      })()
+                                    );
+                                  }}
+                                </ElementsConsumer>
+                              </Elements>
+                            </div>
+                          )}
+                          {user[
+                            `customer${shorter(this.state.selectThisOne)}Id`
+                          ] && (
+                            <form
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                await fetch("https://vault-co.in/add", {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "Application/JSON",
+                                    "Access-Control-Request-Method": "POST",
+                                    "Access-Control-Request-Headers": [
+                                      "Origin",
+                                      "Content-Type"
+                                    ] //allow referer
+                                  },
+                                  body: JSON.stringify({
+                                    bankcard: "us_bank_account",
+                                    customerId:
+                                      user[
+                                        `customer${shorter(
+                                          this.state.selectThisOne
+                                        )}Id`
+                                      ]
+                                  })
+                                })
+                                  .then(async (res) => await res.json())
+                                  .then(async (res) => {
+                                    if (!res.setupIntent)
+                                      return console.log("dev error ", res);
+                                    const clientSecret =
+                                      res.setupIntent.client_secret;
+                                    if (clientSecret)
+                                      this.setState({ clientSecret });
+                                  });
+                              }}
+                              style={{
+                                margin: "4px"
+                              }}
+                            >
+                              <select
+                                onChange={(e) =>
+                                  this.setState({
+                                    account_holder_type: e.target.value
+                                  })
+                                }
+                              >
+                                {["individual", "company"].map((x) => {
+                                  return <option>{x}</option>;
+                                })}
+                              </select>
+                              <input
+                                style={{
+                                  width: "140px"
+                                }}
+                                required={true}
+                                placeholder="account"
+                                value={this.state.account_number}
+                                onChange={(e) =>
+                                  this.setState({
+                                    account_number: e.target.value
+                                  })
+                                }
+                              />
+                              <select
+                                onChange={(e) =>
+                                  this.setState({
+                                    savings: e.target.value
+                                  })
+                                }
+                              >
+                                {["checking", "savings"].map((x) => {
+                                  return <option>{x}</option>;
+                                })}
+                              </select>
+                              {/*<input
+                                  required={true}
+                                  placeholder="checking"
+                                  value={this.state.account_type}
+                                  onChange={(e) => textu(e, "account_type")}
+                                />*/}
+                              <input
+                                style={{
+                                  width: "100px"
+                                }}
+                                required={true}
+                                placeholder="routing"
+                                value={this.state.routing_number}
+                                onChange={(e) =>
+                                  this.setState({
+                                    routing_number: e.target.value
+                                  })
+                                }
+                              />
+                              <button type="submit">add bank</button>
+                            </form>
+                          )}
                         </div>
                       )}
                     </div>

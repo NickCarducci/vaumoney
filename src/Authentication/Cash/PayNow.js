@@ -332,9 +332,9 @@ export default class PayNow extends React.Component {
               </tbody>
             </table>
             <select
-              //value={this.state.payoutType}
+              //value={this.state.paymentType}
               onChange={(e) => {
-                if (this.props.payoutType !== e.target.value)
+                if (this.props.paymentType !== e.target.value)
                   this.props.setPayoutType(e.target.value);
               }}
             >
@@ -342,8 +342,8 @@ export default class PayNow extends React.Component {
                 return <option key={x + "payout"}>{x}</option>;
               })}
             </select>
-            {this.props.payoutType === "send cash" ? null : this.props
-                .payoutType !== "bank" ? (
+            {this.props.paymentType === "send cash" ? null : this.props
+                .paymentType !== "bank" ? (
               /*<div id="card-number" />
                                     <div id="card-exp" />
                                   <div id="card-cvc" />*/
@@ -417,6 +417,7 @@ export default class PayNow extends React.Component {
                 />
               </div>
             )}
+            <button type="submit">Pay Now</button>
           </form>
         )}
       </div>
