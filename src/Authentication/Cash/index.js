@@ -1491,9 +1491,20 @@ class Cash extends React.Component {
                         View Balance{space}-{space}
                         {this.state.balance}
                       </div>
-
-                      {this.state.balance.constructor === Number && (
+                      <div
+                        style={{
+                          display:
+                            this.state.balance.constructor === Number
+                              ? "flex"
+                              : "none",
+                          width: "100%",
+                          justifyContent: "space-between"
+                        }}
+                      >
                         <div
+                          style={{
+                            marginBottom: "10px"
+                          }}
                           onClick={async () => {
                             await fetch("https://vault-co.in/payout", {
                               method: "POST",
@@ -1530,7 +1541,29 @@ class Cash extends React.Component {
                         >
                           payout
                         </div>
-                      )}
+                        {this.state.list.length === 0
+                          ? "none"
+                          : this.state.list.length}
+                        {user &&
+                          user[
+                            `micro${
+                              filler + shorter(this.state.selectThisOne)
+                            }Link`
+                          ] && (
+                            <a
+                              style={{ color: "white" }}
+                              href={
+                                user[
+                                  `micro${
+                                    filler + shorter(this.state.selectThisOne)
+                                  }Link`
+                                ]
+                              }
+                            >
+                              Verify
+                            </a>
+                          )}
+                      </div>
                       {this.state.balance.constructor === Number && (
                         <div>
                           <select
@@ -1560,38 +1593,18 @@ class Cash extends React.Component {
                               return <option key={x + "payout"}>{x}</option>;
                             })}
                           </select>
-                          {this.state.list.length === 0
-                            ? "none"
-                            : this.state.list.map((x) => {
-                                const brand =
-                                  x[
-                                    this.state.payoutType === "Bank"
-                                      ? "us_bank_account"
-                                      : "card"
-                                  ].brand;
-                                return <div>{brand}</div>;
-                              })}
+                          {this.state.list.map((x) => {
+                            const brand =
+                              x[
+                                this.state.payoutType === "Bank"
+                                  ? "us_bank_account"
+                                  : "card"
+                              ].brand;
+                            return <div>{brand}</div>;
+                          })}
                         </div>
                       )}
 
-                      {user &&
-                        user[
-                          `micro${
-                            filler + shorter(this.state.selectThisOne)
-                          }Link`
-                        ] && (
-                          <a
-                            href={
-                              user[
-                                `micro${
-                                  filler + shorter(this.state.selectThisOne)
-                                }Link`
-                              ]
-                            }
-                          >
-                            Verify
-                          </a>
-                        )}
                       {this.state.balance.constructor === Number && (
                         <div
                           style={{ backgroundColor: "white", color: "black" }}
