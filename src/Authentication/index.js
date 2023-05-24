@@ -1005,18 +1005,14 @@ class FIREBASE_APP extends React.Component {
                         fontSize: "16px"
                       }}
                     >
-                      Are you a business?{space}
-                      <span style={{ textDecoration: "line-through" }}>
-                        Get paid by
-                      </span>
-                      {space}
+                      Businesses save on taxes{space}
                       <a
                         style={{
                           color: "white"
                         }}
                         href="https://thumbprint.quora.com/How-do-I-pay-someone-with-Stripe-1"
                       >
-                        Save with Vaumoney
+                        with Vaumoney
                       </a>
                     </span>
                     <br />
@@ -1048,23 +1044,31 @@ class FIREBASE_APP extends React.Component {
                     <br />
                     Fair Haven, NJ
                   </h4>
-                  <h2 style={{ fontSize: "22px" }}>
+                  <h2 style={{ fontSize: "16px" }}>
                     Business customers can load issuable cards or save and
                     payout either medical, student, charity, or home expenses as
                     if they paid them this year. We advise you on how to amend
                     your tax returns if you spend real property development
                     management operations on either direct school, out-of-pocket
-                    health care, or other purposes.{space}
+                    health care, or other "non-charitable"
+                    discount-gift-purposed purchases.{space}
                     <i>
                       With Vaumoney, you can spend tax-free from these accounts:
                     </i>
                   </h2>
-                  <div style={{ fontSize: "16px", color: "violet" }}>
-                    7011 Home: real property development management operations,
-                    8099 Patient: out-of-pocket health care providers, 8299
-                    Student: school tuition, 8398 Charity: foundation.
-                  </div>
-                  <div style={{ fontSize: "12px", color: "dodgerblue" }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "dodgerblue",
+                      backgroundColor: "white"
+                    }}
+                  >
+                    <div style={{ fontSize: "16px", color: "darkviolet" }}>
+                      7011 Home: real property development management
+                      operations, 8099 Patient: out-of-pocket health care
+                      providers, 8299 Student: school tuition, 8398 Charity:
+                      foundation.
+                    </div>
                     What does Stripe Issuing mean when they say they
                     discriminate against personal as opposed to business
                     merchants?{space}
