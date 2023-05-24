@@ -667,6 +667,9 @@ class Cash extends React.Component {
         .catch((x) => standardCatch(x, "/purchase"));
     };
     const makeAccount = async (x) => {
+      /**
+       * delete accounts and customers, if any
+       */
       const deleteThese = [],
         sinkThese = [];
       if (deleteThese.length !== 0 || sinkThese.length !== 0)
@@ -676,9 +679,15 @@ class Cash extends React.Component {
 
       const trust = myStripeAccounts.find((e) => e.mcc === x.mcc),
         { address: addr } = user; //this address was
-      console.log("o address", this.state.address);
+      //console.log("o address", this.state.address);
+      /**
+       * load userDatas private collection from firebase
+       */
       if (!addr && !this.state.address) return getUserInfo();
 
+      /**
+       * a stripe account exists
+       */
       if (
         user[`stripe${shorter(trust.mcc)}Id`] &&
         !user[`stripe${shorter(trust.mcc)}Link`]
@@ -694,82 +703,89 @@ class Cash extends React.Component {
           );
           //submitBankCard();
         }*/
-        if (!this.state.stripe) return this.stripeemailaddress.current.click();
-        if (!user[`customer${shorter(this.state.selectThisOne)}Id`]) {
-          //const { openPaymentSecure: trust } = this.state;
-          const { address: addr, first, last } = user;
-          //return console.log("name", first + last);
-          if (
-            user[`stripecustom${shorter(trust.mcc)}Id`] &&
-            user[`stripecustom${shorter(trust.mcc)}Link`]
-          )
+        /**
+         * prompt cardholder, already custom-cardholder
+         */
+        if (user[`stripecustom${shorter(trust.mcc)}Id`]) {
+          if (user[`stripecustom${shorter(trust.mcc)}Link`]) {
             return console.log("must authorize stripecustom"); //open to yet address
+          }
+          const answer = window.confirm(
+            "Would you like a card? YOU WILL BE CHARGED $2.99 this month and monthly until you cancel" +
+              (user[`customer${shorter(trust.mcc)}Id`]
+                ? " This time we will enable your account for issuing."
+                : "")
+            //(addr ? "" : " Please provide an address")
+          ); //this answer was already purchased
+          //if (!answer && !addr) return null;
+          this.setState({ openPaymentSecure: answer ? trust : null });
 
-          if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
+          //const { openPaymentSecure: trust } = this.state;
+          //return console.log("name", first + last);
+          /**
+           * already custom, possible link verification required first
+           */
+          /**
+           * purchase requires stripe
+           */
+        } else {
+          /**
+           * no issuing? proceed without stripe custom account
+           */
+          var issuing = false;
+          if (issuing) {
+            if (!this.state.stripe)
+              return this.stripeemailaddress.current.click();
             const payments = true;
             purchase(trust, payments);
-            var issuing = false;
-            if (issuing)
-              return console.log("again to issue or else customer-regular");
           }
           /*if (!addr)
     //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
     return this.setState({ openFormSecure: true });*/
-
-          const address = Object.keys(addr)
-            .map((x) => {
-              //console.log(remaining, event.value.address[next]);
-              return addr[x]
-                ? {
-                    [x]: addr[x]
-                  }
-                : "";
-            })
-            .filter((x) => x !== "")
-            .reduce(function (result, current) {
-              return Object.assign(result, current);
-            }, {});
-
-          var edit = {
-            //authorId: this.props.auth.uid,
-            mcc: trust.mcc,
-            last,
-            email: this.props.auth.email,
-            //address: auth.address,
-            name: first + " " + last,
-            phone: this.props.auth.phoneNumber,
-            shipping: {
-              address,
-              name: first + " " + last,
-              phone: this.props.auth.phoneNumber
-            },
-            address,
-            description: trust.description
-          };
-          const merchantSurnamePrefix =
-            user.address.country +
-            String(this.state.selectThisOne).substring(0, 2) +
-            edit.last.substring(0, 3).toLocaleUpperCase();
-          const totalMerchantSurnames = await getDoc(
-            doc(
-              collection(firestore, "merchantSurnames"),
-              merchantSurnamePrefix
+          /**
+           * make customer with private userDatas + firebase auth User info
+           */
+          const { address: addr, first, last } = user,
+            address = Object.keys(addr)
+              .map((x) => {
+                //console.log(remaining, event.value.address[next]);
+                return addr[x]
+                  ? {
+                      [x]: addr[x]
+                    }
+                  : "";
+              })
+              .filter((x) => x !== "")
+              .reduce(function (result, current) {
+                return Object.assign(result, current);
+              }, {}),
+            merchantSurnamePrefix =
+              user.address.country +
+              String(this.state.selectThisOne).substring(0, 2) +
+              last.substring(0, 3).toLocaleUpperCase(),
+            totalMerchantSurnames = await getDoc(
+              doc(
+                collection(firestore, "merchantSurnames"),
+                merchantSurnamePrefix
+              )
             )
-          )
-            .then((dx) => {
-              (dx.exists() ? updateDoc : setDoc)(
-                doc(
-                  collection(firestore, "merchantSurnames"),
-                  merchantSurnamePrefix
-                ),
-                { count: increment(1) }
-              );
-              return { ...dx.data(), id: dx.id }.count + 1;
-            })
-            .catch((err) => {
-              console.log("surname update,set, or get failure: ", err.message);
-              return err;
-            });
+              .then((dx) => {
+                (dx.exists() ? updateDoc : setDoc)(
+                  doc(
+                    collection(firestore, "merchantSurnames"),
+                    merchantSurnamePrefix
+                  ),
+                  { count: increment(1) }
+                );
+                return { ...dx.data(), id: dx.id }.count + 1;
+              })
+              .catch((err) => {
+                console.log(
+                  "surname update,set, or get failure: ",
+                  err.message
+                );
+                return err;
+              });
           if (
             !totalMerchantSurnames ||
             totalMerchantSurnames.constructor !== Number
@@ -778,10 +794,9 @@ class Cash extends React.Component {
               "dev error (no document can be made): ",
               totalMerchantSurnames
             );
-          const invoice_prefix = merchantSurnamePrefix + totalMerchantSurnames;
-          delete edit.authorId;
-          delete edit.mcc;
-          delete edit.last;
+
+          //delete edit.authorId;
+          //delete edit.mcc;
           await fetch("https://vault-co.in/customer", {
             method: "POST",
             headers: {
@@ -791,8 +806,21 @@ class Cash extends React.Component {
             },
             body: JSON.stringify({
               customer: {
-                ...edit,
-                invoice_prefix
+                //authorId: this.props.auth.uid,
+                //mcc: trust.mcc,
+                last,
+                email: this.props.auth.email,
+                //address: auth.address,
+                name: first + " " + last,
+                phone: this.props.auth.phoneNumber,
+                shipping: {
+                  address,
+                  name: first + " " + last,
+                  phone: this.props.auth.phoneNumber
+                },
+                address,
+                description: trust.description,
+                invoice_prefix: merchantSurnamePrefix + totalMerchantSurnames
                 //type: "physical"
               }
             })
@@ -820,16 +848,6 @@ class Cash extends React.Component {
                 .catch((e) => standardCatch(e)); //plaidLink payouts account.details_submitted;
             });
         }
-
-        const answer = window.confirm(
-          "Would you like a card? YOU WILL BE CHARGED $2.99 this month and monthly until you cancel" +
-            (user[`customer${shorter(trust.mcc)}Id`]
-              ? " This time we will enable your account for issuing."
-              : "")
-          //(addr ? "" : " Please provide an address")
-        ); //this answer was already purchased
-        //if (!answer && !addr) return null;
-        return this.setState({ openPaymentSecure: answer ? trust : null });
       }
       if (!this.state.address)
         return window.alert(
