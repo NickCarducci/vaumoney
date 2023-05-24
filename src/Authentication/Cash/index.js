@@ -1652,6 +1652,29 @@ class Cash extends React.Component {
                                                   cvc: "314"
                                                 }
                                               });*/
+                                              const payment_method = {
+                                                us_bank_account: {
+                                                  //country: user.address.country,
+                                                  //currency: "USD",
+                                                  account_holder_type: this
+                                                    .state.account_holder_type,
+                                                  account_number: this.state
+                                                    .account_number,
+                                                  //account_type: this.state.account_type,
+                                                  routing_number: this.state
+                                                    .routing_number
+                                                },
+                                                billing_details: {
+                                                  address: user.address,
+                                                  phone: this.props.auth
+                                                    .phoneNumber,
+                                                  name:
+                                                    user.first +
+                                                    this.state.middle +
+                                                    user.last,
+                                                  email: this.props.auth.email
+                                                }
+                                              };
 
                                               stripe //collectBankAccountForSetup
                                                 .confirmUsBankAccountSetup(
@@ -1677,31 +1700,7 @@ class Cash extends React.Component {
                                                   }*/
                                                   this.state.clientSecret, //"{SETUP_INTENT_CLIENT_SECRET}",
                                                   {
-                                                    payment_method: {
-                                                      us_bank_account: {
-                                                        //country: user.address.country,
-                                                        //currency: "USD",
-                                                        account_holder_type: this
-                                                          .state
-                                                          .account_holder_type,
-                                                        account_number: this
-                                                          .state.account_number,
-                                                        //account_type: this.state.account_type,
-                                                        routing_number: this
-                                                          .state.routing_number
-                                                      },
-                                                      billing_details: {
-                                                        address: user.address,
-                                                        phone: this.props.auth
-                                                          .phoneNumber,
-                                                        name:
-                                                          user.first +
-                                                          this.state.middle +
-                                                          user.last,
-                                                        email: this.props.auth
-                                                          .email
-                                                      }
-                                                    }
+                                                    payment_method
                                                   }
                                                   //https://stripe.com/docs/js/setup_intents/confirm_us_bank_account_setup#stripe_confirm_us_bank_account_setup-attached_payment_method
                                                 )
@@ -1762,7 +1761,67 @@ class Cash extends React.Component {
                                                               )}Link`]: microlink
                                                             }
                                                           )
-                                                            .then(() => {})
+                                                            .then(async () => {
+                                                              await fetch(
+                                                                "https://vault-co.in/attach",
+                                                                {
+                                                                  method:
+                                                                    "POST",
+                                                                  headers: {
+                                                                    "Content-Type":
+                                                                      "Application/JSON",
+                                                                    "Access-Control-Request-Method":
+                                                                      "POST",
+                                                                    "Access-Control-Request-Headers": [
+                                                                      "Origin",
+                                                                      "Content-Type"
+                                                                    ] //allow referer
+                                                                  },
+                                                                  body: JSON.stringify(
+                                                                    {
+                                                                      ...payment_method,
+                                                                      customerId:
+                                                                        user[
+                                                                          `customer${shorter(
+                                                                            this
+                                                                              .state
+                                                                              .selectThisOne
+                                                                          )}Id`
+                                                                        ]
+                                                                    }
+                                                                  )
+                                                                }
+                                                              )
+                                                                .then(
+                                                                  async (res) =>
+                                                                    await res.json()
+                                                                )
+                                                                .then(
+                                                                  async (
+                                                                    res
+                                                                  ) => {
+                                                                    if (
+                                                                      !res.setupIntent
+                                                                    )
+                                                                      return console.log(
+                                                                        "dev error ",
+                                                                        res
+                                                                      );
+                                                                    const clientSecret =
+                                                                      res
+                                                                        .setupIntent
+                                                                        .client_secret;
+                                                                    if (
+                                                                      clientSecret
+                                                                    )
+                                                                      this.setState(
+                                                                        {
+                                                                          clientSecret
+                                                                        }
+                                                                      );
+                                                                  }
+                                                                );
+                                                            })
                                                             .catch((e) =>
                                                               standardCatch(e)
                                                             );
