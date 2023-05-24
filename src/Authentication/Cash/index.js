@@ -74,6 +74,7 @@ class Cash extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      balance: false,
       list: [],
       number: "4242424242424242",
       expiry: "12/34",
@@ -292,7 +293,7 @@ class Cash extends React.Component {
           this.props.navigate("/");
         });
   };
-  deleteThese = async (deleteThese = []) => {
+  deleteThese = async (deleteThese = [], sinkThese = []) => {
     await fetch("https://vault-co.in/delete", {
       method: "POST",
       headers: {
@@ -301,6 +302,7 @@ class Cash extends React.Component {
         "Content-Type": "Application/JSON"
       },
       body: JSON.stringify({
+        sinkThese,
         deleteThese
       })
     }) //stripe account, not plaid access token payout yet
@@ -665,8 +667,25 @@ class Cash extends React.Component {
         .catch((x) => standardCatch(x, "/purchase"));
     };
     const makeAccount = async (x) => {
-      const deleteThese = [];
-      if (deleteThese.length !== 0) return this.deleteThese(deleteThese);
+      const deleteThese = [],
+        sinkThese = [
+          "cus_NwxGbECY8ZBZwE",
+          "cus_NwsP96hfl2yAcN",
+          "cus_NwsGIgWWpEIPys",
+          "cus_NwsG8fQjElVsuY",
+          "cus_NwrFuWFoM9r4CD",
+          "cus_NwrEBvaZTc47tx",
+          "cus_NtnqKZpZzgLnsA",
+          "cus_NtnZ5YCWmswkkb",
+          "cus_NtmvGERvfr2jsZ",
+          "cus_NtlmBBFYDhVA7E",
+          "cus_Ntlm0ykUQLeRfC",
+          "cus_NtYPg9dPkSK9cy",
+          "cus_NtYOG6Q9yVPUUK",
+          "cus_NtYOb2smmPbVZA"
+        ];
+      if (deleteThese.length !== 0)
+        return this.deleteThese(deleteThese, sinkThese);
       if (this.state.selectThisOne !== x.mcc)
         return this.setState({ selectThisOne: x.mcc, balance: false });
 
@@ -704,6 +723,9 @@ class Cash extends React.Component {
           if (!user[`stripecustom${shorter(trust.mcc)}Id`]) {
             const payments = true;
             purchase(trust, payments);
+            var issuing = false;
+            if (issuing)
+              return console.log("again to issue or else customer-regular");
           }
           /*if (!addr)
     //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
@@ -904,95 +926,33 @@ class Cash extends React.Component {
                 const answer = window.confirm(
                   "Are you sure? All outbound card payments will be stopped."
                 );
-                if (answer)
-                  await fetch("https://vault-co.in/delete", {
-                    method: "POST",
-                    headers: {
-                      "Access-Control-Request-Method": "POST",
-                      "Access-Control-Request-Headers": [
-                        "Origin",
-                        "Content-Type"
-                      ], //allow referer
-                      "Content-Type": "Application/JSON"
-                    },
-                    body: JSON.stringify({
-                      deleteThese: [
-                        user[
-                          `stripecustom${shorter(this.state.selectThisOne)}Id`
-                        ]
-                      ],
-                      unSubThese: [
-                        user[
-                          `subscription${shorter(this.state.selectThisOne)}Id`
-                        ]
-                      ]
-                    })
-                  }) //stripe account, not plaid access token payout yet
-                    .then(async (res) => await res.json())
-                    .then(async (result) => {
-                      if (result.status) return console.log(result);
-                      if (result.error) return console.log(result);
-                      if (!result.data)
-                        return console.log("dev error (Cash)", result);
-                      console.log(result.data);
-
-                      await fetch("https://vault-co.in/unsub", {
-                        method: "POST",
-                        headers: {
-                          "Access-Control-Request-Method": "POST",
-                          "Access-Control-Request-Headers": [
-                            "Origin",
-                            "Content-Type"
-                          ], //allow referer
-                          "Content-Type": "Application/JSON"
-                        },
-                        body: JSON.stringify({
-                          deleteThese: [
-                            user[
-                              `subscription${shorter(
-                                this.state.selectThisOne
-                              )}Id`
-                            ]
-                          ],
-                          unSubThese: []
-                        })
-                      }) //stripe account, not plaid access token payout yet
-                        .then(async (res) => await res.json())
-                        .then(async (result) => {
-                          if (result.status) return console.log(result);
-                          if (result.error) return console.log(result);
-                          if (!result.data)
-                            return console.log("dev error (Cash)", result);
-                          console.log(result.data);
-                          updateDoc(
-                            doc(firestore, "userDatas", this.props.auth.uid),
-                            {
-                              [`cardholder${shorter(
-                                this.state.selectThisOne
-                              )}Id`]: deleteField(),
-                              [`customer${shorter(
-                                this.state.selectThisOne
-                              )}Id`]: deleteField(),
-                              [`subscription${shorter(
-                                this.state.selectThisOne
-                              )}Id`]: deleteField()
-                            }
-                          ).then(() => {
-                            updateDoc(
-                              doc(firestore, "users", this.props.auth.uid),
-                              {
-                                [`stripecustom${shorter(
-                                  this.state.selectThisOne
-                                )}Id`]: deleteField()
-                              }
-                            ).then(() => {
-                              window.location.reload();
-                            });
-                          });
-                        })
-                        .catch(standardCatch);
-                    })
-                    .catch(standardCatch);
+                if (answer) {
+                  this.deleteThese(
+                    [
+                      user[`stripecustom${shorter(this.state.selectThisOne)}Id`]
+                    ],
+                    [user[`customer${shorter(this.state.selectThisOne)}Id`]]
+                  );
+                  updateDoc(doc(firestore, "userDatas", this.props.auth.uid), {
+                    [`cardholder${shorter(
+                      this.state.selectThisOne
+                    )}Id`]: deleteField(),
+                    [`customer${shorter(
+                      this.state.selectThisOne
+                    )}Id`]: deleteField(),
+                    [`subscription${shorter(
+                      this.state.selectThisOne
+                    )}Id`]: deleteField()
+                  }).then(() => {
+                    updateDoc(doc(firestore, "users", this.props.auth.uid), {
+                      [`stripecustom${shorter(
+                        this.state.selectThisOne
+                      )}Id`]: deleteField()
+                    }).then(() => {
+                      window.location.reload();
+                    });
+                  });
+                }
               }}
             >
               Cancel $2.99/mo subscription
@@ -2021,61 +1981,82 @@ class Cash extends React.Component {
                       )}
                     </div>
                   )}
-                  {!user ||
-                  !user[`stripe${shorter(this.state.selectThisOne)}Id`] ||
-                  user[
-                    `stripecustom${shorter(this.state.selectThisOne)}Id`
-                  ] ? null : (
-                    <div
-                      onClick={async () => {
-                        const answer = window.confirm(
-                          "Are you sure? You'll have to remake the account."
-                        );
-                        if (answer)
-                          await fetch("https://vault-co.in/delete", {
-                            method: "POST",
-                            headers: {
-                              "Access-Control-Request-Method": "POST",
-                              "Access-Control-Request-Headers": [
-                                "Origin",
-                                "Content-Type"
-                              ], //allow referer
-                              "Content-Type": "Application/JSON"
-                            },
-                            body: JSON.stringify({
-                              deleteThese: [
-                                user[
-                                  `cardholder${shorter(
-                                    this.state.selectThisOne
-                                  )}Id`
+                  {this.state.balance.constructor === Number &&
+                    user &&
+                    user[`stripe${shorter(this.state.selectThisOne)}Id`] && (
+                      <div
+                        onClick={async () => {
+                          if (this.state.balance > 0)
+                            return window.alert(
+                              "Please payout your balance before deleting your account."
+                            );
+                          const answer = window.confirm(
+                            "Are you sure? You'll have to remake the account."
+                          );
+                          if (answer)
+                            await fetch("https://vault-co.in/delete", {
+                              method: "POST",
+                              headers: {
+                                "Access-Control-Request-Method": "POST",
+                                "Access-Control-Request-Headers": [
+                                  "Origin",
+                                  "Content-Type"
+                                ], //allow referer
+                                "Content-Type": "Application/JSON"
+                              },
+                              body: JSON.stringify({
+                                sinkThese: [
+                                  user[
+                                    `customer${shorter(
+                                      this.state.selectThisOne
+                                    )}Id`
+                                  ]
+                                ],
+                                deleteThese: [
+                                  user[
+                                    `stripe${
+                                      filler + shorter(this.state.selectThisOne)
+                                    }Id`
+                                  ]
                                 ]
-                              ]
-                            })
-                          }) //stripe account, not plaid access token payout yet
-                            .then(async (res) => await res.json())
-                            .then(async (result) => {
-                              if (result.status) return console.log(result);
-                              if (result.error) return console.log(result);
-                              if (!result.data)
-                                return console.log("dev error (Cash)", result);
-                              console.log(result.data);
+                              })
+                            }) //stripe account, not plaid access token payout yet
+                              .then(async (res) => await res.json())
+                              .then(async (result) => {
+                                if (result.status) return console.log(result);
+                                if (result.error) return console.log(result);
+                                if (!result.data)
+                                  return console.log(
+                                    "dev error (Cash)",
+                                    result
+                                  );
+                                console.log(result.data);
 
-                              updateDoc(
-                                doc(firestore, "users", this.props.auth.uid),
-                                {
-                                  [`stripe${shorter(
-                                    this.state.selectThisOne
-                                  )}Id`]: deleteField()
-                                }
-                              ).then(() => {
-                                window.location.reload();
+                                updateDoc(
+                                  doc(firestore, "users", this.props.auth.uid),
+                                  {
+                                    [`cardholder${shorter(
+                                      this.state.selectThisOne
+                                    )}Id`]: deleteField(),
+                                    [`customer${shorter(
+                                      this.state.selectThisOne
+                                    )}Id`]: deleteField(),
+                                    [`subscription${shorter(
+                                      this.state.selectThisOne
+                                    )}Id`]: deleteField(),
+                                    [`stripe${
+                                      filler + shorter(this.state.selectThisOne)
+                                    }Id`]: deleteField()
+                                  }
+                                ).then(() => {
+                                  window.location.reload();
+                                });
                               });
-                            });
-                      }}
-                    >
-                      &times;
-                    </div>
-                  )}
+                        }}
+                      >
+                        &times;
+                      </div>
+                    )}
                 </div>
               </div>
             ) : null;
