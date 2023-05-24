@@ -668,23 +668,8 @@ class Cash extends React.Component {
     };
     const makeAccount = async (x) => {
       const deleteThese = [],
-        sinkThese = [
-          "cus_NwxGbECY8ZBZwE",
-          "cus_NwsP96hfl2yAcN",
-          "cus_NwsGIgWWpEIPys",
-          "cus_NwsG8fQjElVsuY",
-          "cus_NwrFuWFoM9r4CD",
-          "cus_NwrEBvaZTc47tx",
-          "cus_NtnqKZpZzgLnsA",
-          "cus_NtnZ5YCWmswkkb",
-          "cus_NtmvGERvfr2jsZ",
-          "cus_NtlmBBFYDhVA7E",
-          "cus_Ntlm0ykUQLeRfC",
-          "cus_NtYPg9dPkSK9cy",
-          "cus_NtYOG6Q9yVPUUK",
-          "cus_NtYOb2smmPbVZA"
-        ];
-      if (deleteThese.length !== 0)
+        sinkThese = [];
+      if (deleteThese.length !== 0 || sinkThese.length !== 0)
         return this.deleteThese(deleteThese, sinkThese);
       if (this.state.selectThisOne !== x.mcc)
         return this.setState({ selectThisOne: x.mcc, balance: false });
@@ -1994,64 +1979,41 @@ class Cash extends React.Component {
                             "Are you sure? You'll have to remake the account."
                           );
                           if (answer)
-                            await fetch("https://vault-co.in/delete", {
-                              method: "POST",
-                              headers: {
-                                "Access-Control-Request-Method": "POST",
-                                "Access-Control-Request-Headers": [
-                                  "Origin",
-                                  "Content-Type"
-                                ], //allow referer
-                                "Content-Type": "Application/JSON"
-                              },
-                              body: JSON.stringify({
-                                sinkThese: [
-                                  user[
-                                    `customer${shorter(
-                                      this.state.selectThisOne
-                                    )}Id`
-                                  ]
-                                ],
-                                deleteThese: [
-                                  user[
-                                    `stripe${
-                                      filler + shorter(this.state.selectThisOne)
-                                    }Id`
-                                  ]
+                            this.deleteThese(
+                              [
+                                user[
+                                  `customer${shorter(
+                                    this.state.selectThisOne
+                                  )}Id`
                                 ]
-                              })
-                            }) //stripe account, not plaid access token payout yet
-                              .then(async (res) => await res.json())
-                              .then(async (result) => {
-                                if (result.status) return console.log(result);
-                                if (result.error) return console.log(result);
-                                if (!result.data)
-                                  return console.log(
-                                    "dev error (Cash)",
-                                    result
-                                  );
-                                console.log(result.data);
-
-                                updateDoc(
-                                  doc(firestore, "users", this.props.auth.uid),
-                                  {
-                                    [`cardholder${shorter(
-                                      this.state.selectThisOne
-                                    )}Id`]: deleteField(),
-                                    [`customer${shorter(
-                                      this.state.selectThisOne
-                                    )}Id`]: deleteField(),
-                                    [`subscription${shorter(
-                                      this.state.selectThisOne
-                                    )}Id`]: deleteField(),
-                                    [`stripe${
-                                      filler + shorter(this.state.selectThisOne)
-                                    }Id`]: deleteField()
-                                  }
-                                ).then(() => {
-                                  window.location.reload();
-                                });
-                              });
+                              ],
+                              [
+                                user[
+                                  `stripe${
+                                    filler + shorter(this.state.selectThisOne)
+                                  }Id`
+                                ]
+                              ]
+                            );
+                          updateDoc(
+                            doc(firestore, "users", this.props.auth.uid),
+                            {
+                              [`cardholder${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField(),
+                              [`customer${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField(),
+                              [`subscription${shorter(
+                                this.state.selectThisOne
+                              )}Id`]: deleteField(),
+                              [`stripe${
+                                filler + shorter(this.state.selectThisOne)
+                              }Id`]: deleteField()
+                            }
+                          ).then(() => {
+                            window.location.reload();
+                          });
                         }}
                       >
                         &times;
