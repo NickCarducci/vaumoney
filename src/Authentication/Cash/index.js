@@ -694,6 +694,7 @@ class Cash extends React.Component {
         if (!user[`customer${shorter(this.state.selectThisOne)}Id`]) {
           //const { openPaymentSecure: trust } = this.state;
           const { address: addr, first, last } = user;
+          //return console.log("name", first + last);
           if (
             user[`stripecustom${shorter(trust.mcc)}Id`] &&
             user[`stripecustom${shorter(trust.mcc)}Link`]
@@ -782,9 +783,11 @@ class Cash extends React.Component {
               "Access-Control-Request-Headers": ["Origin", "Content-Type"] //allow referer
             },
             body: JSON.stringify({
-              ...edit,
-              invoice_prefix
-              //type: "physical"
+              customer: {
+                ...edit,
+                invoice_prefix
+                //type: "physical"
+              }
             })
           })
             .then(async (res) => await res.json())
