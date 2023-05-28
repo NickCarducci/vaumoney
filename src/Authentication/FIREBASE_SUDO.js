@@ -84,9 +84,7 @@ export class CDB {
     //const cc = JSON.parse(JSON.stringify(c)); //https://github.com/pouchdb/pouchdb/issues/6411
     if (!c._id)
       return (
-        window.alert(
-          "pouchdb needs ._id key:value: JSON.parse= " + JSON.parse(c)
-        ) &&
+        window.alert("pouchdb needs ._id key:value: JSON.parse= " + c) &&
         (await this.db
           .destroy()
           .then(() => true)
@@ -99,7 +97,8 @@ export class CDB {
           return copy;
         }); //upsert polyfill has no promise returned (...then)
       //console.log(c);
-      resolve(JSON.stringify(c));
+      const done = JSON.stringify(c);
+      resolve(done);
       //return a copy, don't displace immutable object fields
     }).catch(standardCatch);
   };
@@ -115,8 +114,9 @@ export class CDB {
             allNotes.rows.map(
               async (n) =>
                 await new Promise((r) => {
-                  const which = n.doc.key;
-                  r(JSON.stringify((notes[which] = n.doc)));
+                  const which = n.doc.key,
+                    done = JSON.stringify((notes[which] = n.doc));
+                  r(done);
                 })
             )
           )
@@ -384,12 +384,13 @@ class FIREBASE_SUDO extends React.Component {
   componentDidMount = () => {
     this.state.cdb
       .readCountry()
-      .then(async (r) => await JSON.parse(r))
+      //.then(async (r) => await r)
       .then(
         (r) =>
           r.length === 0 &&
           console.log(
-            "no country stored [Right-Click>inspect>Application>IndexedDB]..."
+            "no country stored [Right-Click>inspect>Application>IndexedDB]...",
+            r
           )
       )
       .catch((err) => console.log(err));
@@ -505,13 +506,12 @@ class FIREBASE_SUDO extends React.Component {
     return (
       <div
         style={{
-          width: "100%",
-          textAlign: "center",
-          position: "absolute"
+          textAlign: "center"
           //transform: `translate(0%,0%)`
         }}
       >
-        {window.location.href === this.props.rooturi ? (
+        {this.props.position ? null : window.location.href ===
+          this.props.rooturi ? (
           <a
             href={this.props.homeuri}
             style={{
@@ -546,7 +546,7 @@ class FIREBASE_SUDO extends React.Component {
         {this.props.home && this.props.home}
         <div
           style={{
-            marginTop: "20px",
+            marginTop: !this.props.position && "20px",
             textAlign: "right",
             width: "80%"
           }}
@@ -568,7 +568,7 @@ class FIREBASE_SUDO extends React.Component {
               : this.props.onroot
               ? "absolute"
               : "fixed",
-            paddingTop: "20px",
+            paddingTop: !this.props.position && "20px",
             overflow: !this.props.onroot ? "hidden" : "",
             fontSize: !this.props.onroot ? "0px" : "",
             //zIndex: 9,
