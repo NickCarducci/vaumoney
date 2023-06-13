@@ -797,7 +797,7 @@ class Cash extends React.Component {
 
           //delete edit.authorId;
           //delete edit.mcc;
-          await fetch("https://vault-co.in/customer", {
+          return await fetch("https://vault-co.in/customer", {
             method: "POST",
             headers: {
               "Content-Type": "Application/JSON",
