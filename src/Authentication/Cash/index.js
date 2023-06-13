@@ -450,7 +450,7 @@ class Cash extends React.Component {
           pad(today.getUTCMonth()) +
           "-" +
           pad(today.getUTCDate()),
-        ip = "100.35.136.125", // IPv4,
+        ip = IPv4,
         user_agent = this.state.user_agent,
         date = String(Math.floor(new Date(now).getTime() / 1000)); //new Date(now).getTime() / 1000, // - 14400, //
       // return console.log("name", name);
@@ -471,7 +471,7 @@ class Cash extends React.Component {
         companyName = `Vaumoney ${trust.account} ` + name,
         ownership_declaration = {
           date,
-          ip, //IPv4
+          ip: IPv4,
           user_agent
         };
       var newAccount = {
@@ -740,8 +740,8 @@ class Cash extends React.Component {
             purchase(trust, payments);
           }
           /*if (!addr)
-    //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
-    return this.setState({ openFormSecure: true });*/
+          //no need emailCallback? while user[`stripeId`]&&!user[`stripeLink`]
+          return this.setState({ openFormSecure: true });*/
           /**
            * make customer with private userDatas + firebase auth User info
            */
@@ -857,7 +857,16 @@ class Cash extends React.Component {
       const answer = window.confirm(
         "Have you read stripe.com/legal/connect-account? Do you consent to everything you can?"
       );
-      if (answer) purchase(x);
+      if (answer)
+        fetch("https://geolocation-db.com/json/")
+          .then(async (res) => await res.json())
+          .then((r) => {
+            const IPv4 = r.IPv4;
+            //console.log(IPv4);
+            this.setState({ IPv4 }, () => {
+              purchase(x);
+            });
+          });
     };
     //console.log("stripe", this.state.stripe);
     //console.log("paymentItems", paymentItems);
