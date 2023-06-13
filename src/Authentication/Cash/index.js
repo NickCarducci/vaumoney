@@ -450,7 +450,7 @@ class Cash extends React.Component {
           pad(today.getUTCMonth()) +
           "-" +
           pad(today.getUTCDate()),
-        ip = IPv4,
+        ip = this.state.IPv4,
         user_agent = this.state.user_agent,
         date = String(Math.floor(new Date(now).getTime() / 1000)); //new Date(now).getTime() / 1000, // - 14400, //
       // return console.log("name", name);
@@ -471,7 +471,7 @@ class Cash extends React.Component {
         companyName = `Vaumoney ${trust.account} ` + name,
         ownership_declaration = {
           date,
-          ip: IPv4,
+          ip: this.state.IPv4,
           user_agent
         };
       var newAccount = {
